@@ -13,41 +13,42 @@ Thread操作系统的核心知识点；第二部分，则讲解RT-Thread内核�
 整本书由浅入深，层层叠加，与初学者的入门路径完全吻合，是学习RT-Thread物联网操作系统的不二之选书籍。同时整本书也兼顾深度，对于要了解操作系统内核原理的使用者，也非常值得一看。
 
 
-RT-Thread 创始人 |recomm002|
+RT-Thread 创始人 
 
-
-
+.. image:: media/recommendation/recomm002.png
+   :align: center
+   :alt: RT-Thread 创始人 
 
 
 本书电子版和配套的实验源码均可到野火电子 / RT-Thread / 芯片之家 公众号下载。
 
-野火电子公众号 RT-Thread公众号 芯片之家公众号
+野火电子公众号 
 
-|recomm003|\ |recomm004|\ |recomm005|
+.. image:: media/recommendation/recomm005.jpeg
+   :align: center
+   :alt: 野火电子公众号 
 
-|recomm006|
+RT-Thread公众号 
+
+.. image:: media/recommendation/recomm004.jpeg
+   :align: center
+   :alt: RT-Thread公众号
+
+芯片之家公众号
+
+.. image:: media/recommendation/recomm003.jpeg
+   :align: center
+   :alt: 芯片之家公众号
+
+.. image:: media/recommendation/recomm006.jpeg
+   :align: center
+   :alt: 《RT-Thread内核实现与应用开发实战指南—基于STM32》
 
 **《RT-Thread内核实现与应用开发实战指南—基于STM32》**
 
-|recomm007|
+.. image:: media/recommendation/recomm007.png
+   :align: center
+   :alt: 野火STM32固件库和GUI书籍
 
 **野火STM32固件库和GUI书籍**
 
-.. |recomm002| image:: media/recommendation/recomm002.png
-   :width: 1.56526in
-   :height: 0.89583in
-.. |recomm003| image:: media/recommendation/recomm003.jpeg
-   :width: 1.64583in
-   :height: 1.64583in
-.. |recomm004| image:: media/recommendation/recomm004.jpeg
-   :width: 1.61806in
-   :height: 1.61806in
-.. |recomm005| image:: media/recommendation/recomm005.jpeg
-   :width: 1.63194in
-   :height: 1.63194in
-.. |recomm006| image:: media/recommendation/recomm006.jpeg
-   :width: 4.11039in
-   :height: 4.11039in
-.. |recomm007| image:: media/recommendation/recomm007.png
-   :width: 5.76806in
-   :height: 2.05347in

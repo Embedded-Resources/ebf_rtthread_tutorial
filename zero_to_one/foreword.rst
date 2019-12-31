@@ -59,50 +59,76 @@ Thread的使用。要注意的是，在实现的过程中，某些函数我会�
 
 表格 1‑1 野火STM32开发板型号汇总
 
-========== ========= ==== ===== =====
-型号       区别
-========== ========= ==== ===== =====
--          内核      引脚 RAM   ROM MINI       Cortex-M3 64   48KB  256KB 指南者     Cortex-M3 100  64KB  512KB 霸道       Cortex-M3 144  64KB  512KB 霸天虎
-  Cortex-M4 144  192KB 1MB 挑战者F429 Cortex-M4 176  256KB 1MB 挑战者F767 Cortex-M7 176  512KB 1MB 挑战者H7   Cortex-M7 176  1MB   2MB ========== ========= ====
-  ===== =====
 
-|forewo002|
+==========  =========  ====  =====  =====
+   型号       内核     引脚   RAM    ROM
+==========  =========  ====  =====  =====
+MINI        Cortex-M3  64    48KB   256KB
+指南者      Cortex-M3  100   64KB   512KB
+霸道        Cortex-M3  144   64KB   512KB
+霸天虎      Cortex-M4  144   192KB  1MB
+挑战者F429  Cortex-M4  176   256KB  1MB
+挑战者F767  Cortex-M7  176   512KB  1MB
+挑战者H7    Cortex-M7  176   1MB    2MB
+==========  =========  ====  =====  =====
+
+.. image:: media/foreword/forewo002.png
+   :align: center
+   :alt: 野火【MINI】STM32F103RCT6 开发板
 
 图 1‑1 野火【MINI】STM32F103RCT6 开发板
 
-|forewo003|
+.. image:: media/foreword/forewo003.png
+   :align: center
+   :alt: 野火【MINI】STM32F103RCT6 开发板 带液晶效果图
 
 图 1‑2 野火【MINI】STM32F103RCT6 开发板 带液晶效果图
 
-|forewo004|
+.. image:: media/foreword/forewo004.png
+   :align: center
+   :alt: 野火【指南者】STM32F103VET6 开发板
 
 图 1‑3 野火【指南者】STM32F103VET6 开发板
 
-|forewo005|
+.. image:: media/foreword/forewo005.png
+   :align: center
+   :alt: 野火【指南者】STM32F103VET6 开发板带液晶效果图
 
 图 1‑4 野火【指南者】STM32F103VET6 开发板带液晶效果图
 
-|forewo006|
+.. image:: media/foreword/forewo006.png
+   :align: center
+   :alt: 野火【霸道】STM32F103ZET6 开发板
 
 图 1‑5 野火【霸道】STM32F103ZET6 开发板
 
-|forewo007|
+.. image:: media/foreword/forewo007.png
+   :align: center
+   :alt: 野火【霸道】STM32F103ZET6 开发板带液晶显示效果图 
 
 图 1‑6 野火【霸道】STM32F103ZET6 开发板带液晶显示效果图
 
-|forewo008|
+.. image:: media/foreword/forewo008.png
+   :align: center
+   :alt: 野火【霸天虎】STM32F407ZGT6 开发板 
 
 图 1‑7 野火【霸天虎】STM32F407ZGT6 开发板
 
-|forewo009|
+.. image:: media/foreword/forewo009.png
+   :align: center
+   :alt: 野火【霸天虎】STM32F407ZGT6 开发板带液晶显示效果图
 
 图 1‑8 野火【霸天虎】STM32F407ZGT6 开发板带液晶显示效果图
 
-|forewo010|
+.. image:: media/foreword/forewo010.png
+   :align: center
+   :alt: 野火【挑战者】F429/F767/H743开发板 
 
 图 1‑9 野火【挑战者】F429/F767/H743开发板
 
-|forewo011|
+.. image:: media/foreword/forewo011.png
+   :align: center
+   :alt: 野火【挑战者】F429/F767/H74开发板 带液晶效果图
 
 图 1‑10 野火【挑战者】F429/F767/H74开发板 带液晶效果图
 
@@ -113,33 +139,3 @@ Thread的使用。要注意的是，在实现的过程中，某些函数我会�
 
 鉴于水平有限，本书难免有纰漏，热心的读者也可把勘误发到论坛好让我们改进做得更好，祝您学习愉快，RT-Thread的世界，野火与您同行。
 
-.. |forewo002| image:: media/foreword/forewo002.png
-   :width: 3.34328in
-   :height: 3.08688in
-.. |forewo003| image:: media/foreword/forewo003.png
-   :width: 3.34722in
-   :height: 4.31575in
-.. |forewo004| image:: media/foreword/forewo004.png
-   :width: 4.22388in
-   :height: 3.07561in
-.. |forewo005| image:: media/foreword/forewo005.png
-   :width: 3.05556in
-   :height: 3.77913in
-.. |forewo006| image:: media/foreword/forewo006.png
-   :width: 3.85821in
-   :height: 2.78241in
-.. |forewo007| image:: media/foreword/forewo007.png
-   :width: 3.90972in
-   :height: 2.82776in
-.. |forewo008| image:: media/foreword/forewo008.png
-   :width: 3.75373in
-   :height: 2.79609in
-.. |forewo009| image:: media/foreword/forewo009.png
-   :width: 3.81944in
-   :height: 2.82391in
-.. |forewo010| image:: media/foreword/forewo010.png
-   :width: 4.21642in
-   :height: 3.0915in
-.. |forewo011| image:: media/foreword/forewo011.png
-   :width: 4.03472in
-   :height: 2.91724in
