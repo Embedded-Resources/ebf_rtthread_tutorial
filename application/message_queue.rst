@@ -1,7 +1,7 @@
 .. vim: syntax=rst
 
 消息队列
-----
+=====
 
 同学们，回想一下，在我们裸机的编程中，我们是怎么样用全局的一个数组的呢？
 
@@ -51,7 +51,9 @@ RT-Thread操作系统的消息队列对象由多个元素组成，当消息队�
 
 队列的运作过程具体见图 18‑1。
 
-|messag002|
+.. image:: media/message_queue/messag002.png
+    :align: center
+    :alt: 图 18‑1队列读写数据操作示意图
 
 图 18‑1队列读写数据操作示意图
 
@@ -78,37 +80,26 @@ RT-Thread操作系统的消息队列对象由多个元素组成，当消息队�
 
 消息队列控制块包含了每个消息队列的信息，如消息队列名称、内存缓冲区、消息大小以及队列长度等，是很重要的一个内核对象控制块，具体见代码清单 18‑1。
 
-代码清单 18‑1消息队列控制块
+.. code-block:: c
+    :caption: 代码清单 18‑1消息队列控制块
+    :linenos:
 
-1 struct rt_messagequeue {
+    struct rt_messagequeue {
+        struct rt_ipc_object parent;                   (1)    
 
-2 struct rt_ipc_object parent; **(1)**
+        void                *msg_pool;                 (2)   
 
-3
+        rt_uint16_t          msg_size;                 (3)    
+        rt_uint16_t          max_msgs;                 (4)    
 
-4 void \*msg_pool; **(2)**
+        rt_uint16_t          entry;                    (5)    
 
-5
+        void                *msg_queue_head;           (6)    
+        void                *msg_queue_tail;           (7)     
+        void                *msg_queue_free;           (8)   
+    };
+    typedef struct rt_messagequeue *rt_mq_t;
 
-6 rt_uint16_t msg_size; **(3)**
-
-7 rt_uint16_t max_msgs; **(4)**
-
-8
-
-9 rt_uint16_t entry; **(5)**
-
-10
-
-11 void \*msg_queue_head; **(6)**
-
-12 void \*msg_queue_tail; **(7)**
-
-13 void \*msg_queue_free; **(8)**
-
-14 };
-
-15 typedef struct rt_messagequeue \*rt_mq_t;
 
 代码清单 18‑1\ **(1)**\ ：消息队列属于内核对象，会在自身结构体里面包含一个内核对象类型的成员，通过这个成员可以将消息队列挂到系统对象容器里面。
 
@@ -145,119 +136,67 @@ RT-Thread操作系统的消息队列对象由多个元素组成，当消息队�
 消息队列创建函数，顾名思义，就是创建一个队列，与线程一样，都是需要先创建才能使用的东西，RT-Thread肯定不知道我们需要什么样的队列，所以，我们需要怎么样的队列我们就自己创建就行了，比如队列的长度，队列句柄，节点的大小这些信息都是我们自己定义的，RT-
 Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自定义的，创建队列的函数源码具体见代码清单 18‑2。
 
-代码清单 18‑2消息队列创建函数rt_mq_create()源码
+.. code-block:: c
+    :caption: 代码清单 18‑2消息队列创建函数rt_mq_create()源码
+    :linenos:
 
-1 rt_mq_t rt_mq_create(const char \*name,
+    rt_mq_t rt_mq_create(const char *name,
+                        rt_size_t   msg_size,
+                        rt_size_t   max_msgs,
+                        rt_uint8_t  flag)
+    {
+        struct rt_messagequeue *mq;
+        struct rt_mq_message *head;
+        register rt_base_t temp;
 
-2 rt_size_t msg_size,
+        RT_DEBUG_NOT_IN_INTERRUPT;
 
-3 rt_size_t max_msgs,
+        /* 分配消息队列对象 */				    	(1)
+        mq = (rt_mq_t)rt_object_allocate(RT_Object_Class_MessageQueue, name);
+        if (mq == RT_NULL)								
+            return mq;
 
-4 rt_uint8_t flag)
+        /* 设置parent */
+        mq->parent.parent.flag = flag;				(2)
 
-5 {
+        /* 初始化消息队列内核对象 */
+        rt_ipc_object_init(&(mq->parent));			(3)
 
-6 struct rt_messagequeue \*mq;
+        /* 初始化消息队列 */
 
-7 struct rt_mq_message \*head;
+        /* 获得正确的消息队列大小 */
+        mq->msg_size = RT_ALIGN(msg_size, RT_ALIGN_SIZE);	(4)
+        mq->max_msgs = max_msgs;
 
-8 register rt_base_t temp;
+        /* 分配消息内存池 */
+        mq->msg_pool = RT_KERNEL_MALLOC((mq->msg_size +
+                                sizeof(struct rt_mq_message)) * mq->max_msgs);
+        if (mq->msg_pool == RT_NULL) {				(5)
+            rt_mq_delete(mq);
 
-9
+            return RT_NULL;
+        }
 
-10 RT_DEBUG_NOT_IN_INTERRUPT;
+        /* 初始化消息队列头尾链表 */
+        mq->msg_queue_head = RT_NULL;				(6)
+        mq->msg_queue_tail = RT_NULL;
 
-11
+        /* 初始化消息队列空闲链表 */
+        mq->msg_queue_free = RT_NULL;
+        for (temp = 0; temp < mq->max_msgs; temp ++) {		(7)
+            head = (struct rt_mq_message *)((rt_uint8_t *)mq->msg_pool +
+                temp * (mq->msg_size + sizeof(struct rt_mq_message)));
+            head->next = mq->msg_queue_free;
+            mq->msg_queue_free = head;
+        }
 
-12 /\* 分配消息队列对象 \*/ **(1)**
+        /* 消息队列的个数为0（清零）*/
+        mq->entry = 0;						(8)
 
-13 mq = (rt_mq_t)rt_object_allocate(RT_Object_Class_MessageQueue, name);
+        return mq;
+    }
+    RTM_EXPORT(rt_mq_create);
 
-14 if (mq == RT_NULL)
-
-15 return mq;
-
-16
-
-17 /\* 设置parent \*/
-
-18 mq->parent.parent.flag = flag; **(2)**
-
-19
-
-20 /\* 初始化消息队列内核对象 \*/
-
-21 rt_ipc_object_init(&(mq->parent)); **(3)**
-
-22
-
-23 /\* 初始化消息队列 \*/
-
-24
-
-25 /\* 获得正确的消息队列大小 \*/
-
-26 mq->msg_size = RT_ALIGN(msg_size, RT_ALIGN_SIZE); **(4)**
-
-27 mq->max_msgs = max_msgs;
-
-28
-
-29 /\* 分配消息内存池 \*/
-
-30 mq->msg_pool = RT_KERNEL_MALLOC((mq->msg_size +
-
-31 sizeof(struct rt_mq_message)) \* mq->max_msgs);
-
-32 if (mq->msg_pool == RT_NULL) { **(5)**
-
-33 rt_mq_delete(mq);
-
-34
-
-35 return RT_NULL;
-
-36 }
-
-37
-
-38 /\* 初始化消息队列头尾链表 \*/
-
-39 mq->msg_queue_head = RT_NULL; **(6)**
-
-40 mq->msg_queue_tail = RT_NULL;
-
-41
-
-42 /\* 初始化消息队列空闲链表 \*/
-
-43 mq->msg_queue_free = RT_NULL;
-
-44 for (temp = 0; temp < mq->max_msgs; temp ++) { **(7)**
-
-45 head = (struct rt_mq_message \*)((rt_uint8_t \*)mq->msg_pool +
-
-46 temp \* (mq->msg_size + sizeof(struct rt_mq_message)));
-
-47 head->next = mq->msg_queue_free;
-
-48 mq->msg_queue_free = head;
-
-49 }
-
-50
-
-51 /\* 消息队列的个数为0（清零）*/
-
-52 mq->entry = 0; **(8)**
-
-53
-
-54 return mq;
-
-55 }
-
-56 RTM_EXPORT(rt_mq_create);
 
 代码清单 18‑2\ **(1)**\ ：分配消息队列对象，调用rt_object_allocate此函数将从对象系统分配对象，为创建的消息队列分配一个消息队列的对象，并且命名对象名称， 在系统中，对象的名称必须是唯一的。
 
@@ -277,23 +216,21 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 代码清单 18‑2\ **(8)**\ ：消息队列的个数为0（清零）。
 
 在创建消息队列的时候，是需要用户自己定义消息队列的句柄的，但是注意了，定义了队列的句柄并不等于创建了队列，创建队列必须是调用rt_mq_create()函数进行创建，否则，以后根据队列句柄使用队列的其它函数的时候会发生错误，在创建队列的时候是会返回创建的情况的，如果创建成功则返回消息队列句柄，如果是
-返回RT_NULL，则表示失败，消息队列创建函数rt_mq_create()使用实例具体见代码清单 18‑3加粗部分。
+返回RT_NULL，则表示失败，消息队列创建函数rt_mq_create()使用实例具体见代码清单 18‑3高亮部分。
 
-代码清单 18‑3消息队列创建函数rt_mq_create()实例
+.. code-block:: c
+    :caption: 代码清单 18‑3消息队列创建函数rt_mq_create()实例
+    :emphasize-lines: 1-5
+    :linenos:
 
-**1 /\* 创建一个消息队列 \*/**
+    /* 创建一个消息队列 */
+    test_mq = rt_mq_create("test_mq",	/* 消息队列名字 */
+                        40,     	/* 消息的最大长度 */
+                        20,    		/* 消息队列的最大容量 */
+                        RT_IPC_FLAG_FIFO);/* 队列模式 FIFO(0x00)*/
+    if (test_mq != RT_NULL)
+        rt_kprintf("消息队列创建成功！\n\n");
 
-**2 test_mq = rt_mq_create("test_mq", /\* 消息队列名字 \*/**
-
-**3 40, /\* 消息的最大长度 \*/**
-
-**4 20, /\* 消息队列的最大容量 \*/**
-
-**5 RT_IPC_FLAG_FIFO);/\* 队列模式 FIFO(0x00)*/**
-
-6 if (test_mq != RT_NULL)
-
-7 rt_kprintf("消息队列创建成功！\n\n");
 
 消息队列删除函数rt_mq_delete()
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -301,57 +238,36 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 队列删除函数是根据消息队列句柄直接删除的，删除之后这个消息队列的所有信息都会被系统回收清空，而且不能再次使用这个消息队列了，但是需要注意的是，如果某个消息队列没有被创建，那也是无法被删除的，动脑子想想都知道，没创建的东西就不存在，怎么可能被删除。删除消息队列的时候会把所有由于访问此消息队列而进入阻塞
 态的线程都从阻塞链表中删除，mq是rt_mq_delete传入的参数，是消息队列句柄，表示的是要删除哪个想队列，其函数源码具体见代码清单 18‑4。
 
-代码清单 18‑4消息队列删除函数rt_mq_delete()源码
+.. code-block:: c
+    :caption: 代码清单 18‑4消息队列删除函数rt_mq_delete()源码
+    :linenos:
 
-1 rt_err_t rt_mq_delete(rt_mq_t mq)
+    rt_err_t rt_mq_delete(rt_mq_t mq)
+    {
+        RT_DEBUG_NOT_IN_INTERRUPT;
 
-2 {
+        /* 检查消息队列 */
+        RT_ASSERT(mq != RT_NULL);				(1)
 
-3 RT_DEBUG_NOT_IN_INTERRUPT;
+        /* 恢复所有因为访问此队列而阻塞的线程 */
+        rt_ipc_list_resume_all(&(mq->parent.suspend_thread)); (2)
 
-4
+    #if defined(RT_USING_MODULE) && defined(RT_USING_SLAB)
+        /*  消息队列对象属于应用程序模块 ，此处不使用 */
+        if (mq->parent.parent.flag & RT_OBJECT_FLAG_MODULE)
+            rt_module_free(mq->parent.parent.module_id, mq->msg_pool);
+        else
+    #endif
 
-5 /\* 检查消息队列 \*/
+            /* 释放消息队列内存 */
+            RT_KERNEL_FREE(mq->msg_pool);			(3)
 
-6 RT_ASSERT(mq != RT_NULL); **(1)**
+        /* 删除消息队列对象 */
+        rt_object_delete(&(mq->parent.parent));		(4)
 
-7
+        return RT_EOK;
+    }
 
-8 /\* 恢复所有因为访问此队列而阻塞的线程 \*/
-
-9 rt_ipc_list_resume_all(&(mq->parent.suspend_thread)); **(2)**
-
-10
-
-11 #if defined(RT_USING_MODULE) && defined(RT_USING_SLAB)
-
-12 /\* 消息队列对象属于应用程序模块 ，此处不使用 \*/
-
-13 if (mq->parent.parent.flag & RT_OBJECT_FLAG_MODULE)
-
-14 rt_module_free(mq->parent.parent.module_id, mq->msg_pool);
-
-15 else
-
-16 #endif
-
-17
-
-18 /\* 释放消息队列内存 \*/
-
-19 RT_KERNEL_FREE(mq->msg_pool); **(3)**
-
-20
-
-21 /\* 删除消息队列对象 \*/
-
-22 rt_object_delete(&(mq->parent.parent)); **(4)**
-
-23
-
-24 return RT_EOK;
-
-25 }
 
 代码清单 18‑4\ **(1)**\ ：检测消息队列是否被创建了，如果是则可以进行删除操作。
 
@@ -363,25 +279,22 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 代码清单 18‑4\ **(4)**\ ：删除消息队列对象并且释放消息队列内核对象的内存，释放内核对象内存在rt_object_delete()函数中实现。
 
 消息队列删除函数rt_mq_delete()的使用也是很简单的，只需传入要删除的消息队列的句柄即可，调用这个函数时，系统将删除这个消息队列。如果删除该消息队列时，有线程正在等待消息，那么删除操作会先唤醒等待在消息队列量上的线程（等待线程的返回值是-RT_ERROR），具体见代码清单
-18‑5加粗部分。
+18‑5高亮部分。
 
-代码清单 18‑5消息队列删除函数rt_mq_delete()实例
+.. code-block:: c
+    :caption: 代码清单 18‑5消息队列删除函数rt_mq_delete()实例
+    :emphasize-lines: 6-8
+    :linenos:
 
-1 /\* 定义消息队列控制块 \*/
+    /* 定义消息队列控制块 */
+    static rt_mq_t test_mq = RT_NULL;
 
-2 static rt_mq_t test_mq = RT_NULL;
+    rt_err_t uwRet = RT_EOK;
 
-3
+    uwRet = rt_mq_delete(test_mq);
+    if (RT_EOK == uwRet)
+        rt_kprintf("消息队列删除成功！\n\n");
 
-4 rt_err_t uwRet = RT_EOK;
-
-5
-
-**6 uwRet = rt_mq_delete(test_mq);**
-
-**7 if (RT_EOK == uwRet)**
-
-**8 rt_kprintf("消息队列删除成功！\n\n");**
 
 消息队列发送消息函数rt_mq_send()
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -389,153 +302,84 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 线程或者中断服务程序都可以给消息队列发送消息。当发送消息时，消息队列对象先从空闲消息链表上取下一个空闲消息块，把线程或者中断服务程序发送的消息内容复制到消息块上，然后把该消息块挂到消息队列的尾部。当且仅当空闲消息链表上有可用的空闲消息块时，发送者才能成功发送消息；当空闲消息链表上无可用消息块，说明消
 息队列已满，此时，发送消息的的线程或者中断程序会收到一个错误码（-RT_EFULL），消息队列发送消息函数rt_mq_send()源码具体见代码清单 18‑6。
 
-代码清单 18‑6消息队列发送消息函数rt_mq_send()源码
+.. code-block:: c
+    :caption: 代码清单 18‑6消息队列发送消息函数rt_mq_send()源码
+    :linenos:
+
+    rt_err_t rt_mq_send(rt_mq_t mq, void *buffer, rt_size_t size)	(1)
+    {
+        register rt_ubase_t temp;
+        struct rt_mq_message *msg;
+
+        RT_ASSERT(mq != RT_NULL);					(2)
+        RT_ASSERT(buffer != RT_NULL);
+        RT_ASSERT(size != 0);
+
+        /* 判断消息的大小*/	
+        if (size > mq->msg_size)					(3)
+            return -RT_ERROR;
+
+        RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mq->parent.parent))); 
+
+        /* 关中断 */
+        temp = rt_hw_interrupt_disable();				
+
+        /* 获取一个空闲链表，必须有一个空闲链表项*/
+        msg = (struct rt_mq_message *)mq->msg_queue_free;		(4)	
+        /* 消息队列满 */
+        if (msg == RT_NULL) {
+            /* 开中断 */
+            rt_hw_interrupt_enable(temp);
+
+            return -RT_EFULL;
+        }
+        /* 移动空闲链表指针 */
+        mq->msg_queue_free = msg->next;				(5)
+
+        /* 开中断 */
+        rt_hw_interrupt_enable(temp);
+
+        /* 这个消息是新的链表尾部，其下一个指针为RT_NULL /
+        msg->next = RT_NULL; 
+        /* 拷贝数据 */
+        rt_memcpy(msg + 1, buffer, size);				(6)
+
+        /* 关中断 */
+        temp = rt_hw_interrupt_disable();
+        /* 将消息挂载到消息队列尾部 */
+        if (mq->msg_queue_tail != RT_NULL) {			(7)
+            /* 如果已经存在消息队列尾部链表 */
+            ((struct rt_mq_message *)mq->msg_queue_tail)->next = msg;
+        }
+
+        /* 设置新的消息队列尾部链表指针 */
+        mq->msg_queue_tail = msg;					(8)
+        /*  如果头部链表是空的，设置头部链表指针 */
+        if (mq->msg_queue_head == RT_NULL)				(9)
+            mq->msg_queue_head = msg;
+
+        /* 增加消息数量记录 */
+        mq->entry ++;						(10)
+                        
+        /* 恢复挂起线程 */
+        if (!rt_list_isempty(&mq->parent.suspend_thread)) {		(11)
+            rt_ipc_list_resume(&(mq->parent.suspend_thread));
+
+            /* 开中断 */
+            rt_hw_interrupt_enable(temp);
+
+            rt_schedule();						(12)
+        
+            return RT_EOK;
+        }
+
+        /* 开中断 */
+        rt_hw_interrupt_enable(temp);
+
+        return RT_EOK;
+    }
+    RTM_EXPORT(rt_mq_send);
 
-1 rt_err_t rt_mq_send(rt_mq_t mq, void \*buffer, rt_size_t size) **(1)**
-
-2 {
-
-3 register rt_ubase_t temp;
-
-4 struct rt_mq_message \*msg;
-
-5
-
-6 RT_ASSERT(mq != RT_NULL); **(2)**
-
-7 RT_ASSERT(buffer != RT_NULL);
-
-8 RT_ASSERT(size != 0);
-
-9
-
-10 /\* 判断消息的大小*/
-
-11 if (size > mq->msg_size) **(3)**
-
-12 return -RT_ERROR;
-
-13
-
-14 RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mq->parent.parent)));
-
-15
-
-16 /\* 关中断 \*/
-
-17 temp = rt_hw_interrupt_disable();
-
-18
-
-19 /\* 获取一个空闲链表，必须有一个空闲链表项*/
-
-20 msg = (struct rt_mq_message \*)mq->msg_queue_free; **(4)**
-
-21 /\* 消息队列满 \*/
-
-22 if (msg == RT_NULL) {
-
-23 /\* 开中断 \*/
-
-24 rt_hw_interrupt_enable(temp);
-
-25
-
-26 return -RT_EFULL;
-
-27 }
-
-28 /\* 移动空闲链表指针 \*/
-
-29 mq->msg_queue_free = msg->next; **(5)**
-
-30
-
-31 /\* 开中断 \*/
-
-32 rt_hw_interrupt_enable(temp);
-
-33
-
-34 /\* 这个消息是新的链表尾部，其下一个指针为RT_NULL /
-
-35 msg->next = RT_NULL;
-
-36 /\* 拷贝数据 \*/
-
-37 rt_memcpy(msg + 1, buffer, size); **(6)**
-
-38
-
-39 /\* 关中断 \*/
-
-40 temp = rt_hw_interrupt_disable();
-
-41 /\* 将消息挂载到消息队列尾部 \*/
-
-42 if (mq->msg_queue_tail != RT_NULL) { **(7)**
-
-43 /\* 如果已经存在消息队列尾部链表 \*/
-
-44 ((struct rt_mq_message \*)mq->msg_queue_tail)->next = msg;
-
-45 }
-
-46
-
-47 /\* 设置新的消息队列尾部链表指针 \*/
-
-48 mq->msg_queue_tail = msg; **(8)**
-
-49 /\* 如果头部链表是空的，设置头部链表指针 \*/
-
-50 if (mq->msg_queue_head == RT_NULL) **(9)**
-
-51 mq->msg_queue_head = msg;
-
-52
-
-53 /\* 增加消息数量记录 \*/
-
-54 mq->entry ++; **(10)**
-
-55
-
-56 /\* 恢复挂起线程 \*/
-
-57 if (!rt_list_isempty(&mq->parent.suspend_thread)) { **(11)**
-
-58 rt_ipc_list_resume(&(mq->parent.suspend_thread));
-
-59
-
-60 /\* 开中断 \*/
-
-61 rt_hw_interrupt_enable(temp);
-
-62
-
-63 rt_schedule(); **(12)**
-
-64
-
-65 return RT_EOK;
-
-66 }
-
-67
-
-68 /\* 开中断 \*/
-
-69 rt_hw_interrupt_enable(temp);
-
-70
-
-71 return RT_EOK;
-
-72 }
-
-73 RTM_EXPORT(rt_mq_send);
 
 代码清单 18‑6\ **(1)**\ ：在发送消息的时候需要传递一些参数：rt_mq_t mq是已经创建的消息队列句柄；void \*buffer是即将发送消息的存储地址；rt_size_t size是即将发送消息的大小。
 
@@ -561,314 +405,174 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 
 代码清单 18‑6\ **(12)**\ ：发起一次线程调度。
 
-发送消息时，发送者需指定发送到的消息队列的对象句柄（即指向消息队列控制块的指针），并且指定发送的消息内容以及消息大小，在发送一个普通消息之后，空闲消息链表上的消息被转移到了消息队列尾链表上，消息队列发送消息函数rt_mq_send()的实例具体见代码清单 18‑7加粗部分。
+发送消息时，发送者需指定发送到的消息队列的对象句柄（即指向消息队列控制块的指针），并且指定发送的消息内容以及消息大小，在发送一个普通消息之后，空闲消息链表上的消息被转移到了消息队列尾链表上，消息队列发送消息函数rt_mq_send()的实例具体见代码清单 18‑7高亮部分。
 
-代码清单 18‑7消息队列发送消息函数rt_mq_send()实例
+.. code-block:: c
+    :caption: 代码清单 18‑7消息队列发送消息函数rt_mq_send()实例
+    :emphasize-lines: 8-11,17-20
+    :linenos:
 
-1 static void send_thread_entry(void\* parameter)
+    static void send_thread_entry(void* parameter)
+    {
+        rt_err_t uwRet = RT_EOK;
+        uint32_t send_data1 = 1;
+        uint32_t send_data2 = 2;
+        while (1) {/* K1 被按下 */
+            if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) { 
+                /* 将数据写入（发送）到队列中，等待时间为 0  */
+                uwRet = rt_mq_send(test_mq,	/* 写入（发送）队列的ID(句柄) */
+                                &send_data1, /* 写入（发送）的数据 */
+                                sizeof(send_data1)); /* 数据的长度 */
+                if (RT_EOK != uwRet) {
+                    rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
+                }
+            }/* K1 被按下 */
+            if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) { 
+                /* 将数据写入（发送）到队列中，等待时间为 0  */
+                uwRet = rt_mq_send(test_mq,	/* 写入（发送）队列的ID(句柄) */
+                                    &send_data2, /* 写入（发送）的数据 */
+                                    sizeof(send_data2)); /* 数据的长度 */
+                if (RT_EOK != uwRet) {
+                    rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
+                }
+            }
+            rt_thread_delay(20);
+        }
+    }
 
-2 {
-
-3 rt_err_t uwRet = RT_EOK;
-
-4 uint32_t send_data1 = 1;
-
-5 uint32_t send_data2 = 2;
-
-6 while (1) {/\* K1 被按下 \*/
-
-7 if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) {
-
-**8 /\* 将数据写入（发送）到队列中，等待时间为 0 \*/**
-
-**9 uwRet = rt_mq_send(test_mq, /\* 写入（发送）队列的ID(句柄) \*/**
-
-**10 &send_data1, /\* 写入（发送）的数据 \*/**
-
-**11 sizeof(send_data1)); /\* 数据的长度 \*/**
-
-12 if (RT_EOK != uwRet) {
-
-13 rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
-
-14 }
-
-15 }/\* K1 被按下 \*/
-
-16 if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {
-
-**17 /\* 将数据写入（发送）到队列中，等待时间为 0 \*/**
-
-**18 uwRet = rt_mq_send(test_mq, /\* 写入（发送）队列的ID(句柄) \*/**
-
-**19 &send_data2, /\* 写入（发送）的数据 \*/**
-
-**20 sizeof(send_data2)); /\* 数据的长度 \*/**
-
-21 if (RT_EOK != uwRet) {
-
-22 rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
-
-23 }
-
-24 }
-
-25 rt_thread_delay(20);
-
-26 }
-
-27 }
 
 消息队列接收消息函数rt_mq_recv()
 ^^^^^^^^^^^^^^^^^^^^^^
 
 当消息队列中有消息时，接收线程才能接收到消息，接收消息是有阻塞机制的，用户可以自定义等待时间，RT-Thread的接收消息过程是：接收一个消息后消息队列的头链表消息被转移到了空闲消息链表中，其源码实现具体见代码清单 18‑8。
 
-代码清单 18‑8消息队列接收消息函数rt_mq_recv()源码
+.. code-block:: c
+    :caption: 代码清单 18‑8消息队列接收消息函数rt_mq_recv()源码
+    :linenos:
+
+    rt_err_t rt_mq_recv(rt_mq_t    mq,				(1)
+                        void      *buffer,				(2)
+                        rt_size_t  size,				(3)
+                        rt_int32_t timeout)				(4)
+    {
+        struct rt_thread *thread;
+        register rt_ubase_t temp;
+        struct rt_mq_message *msg;
+        rt_uint32_t tick_delta;
+
+        RT_ASSERT(mq != RT_NULL);
+        RT_ASSERT(buffer != RT_NULL);
+        RT_ASSERT(size != 0);					(5)
+
+        
+        tick_delta = 0;
+        /* 获取当前的线程 */
+        thread = rt_thread_self();					(6)
+        RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(mq->parent.parent)));
+
+        /* 关中断 */
+        temp = rt_hw_interrupt_disable();
+
+        /* 非阻塞情况 */
+        if (mq->entry == 0 && timeout == 0) {			(7)
+            rt_hw_interrupt_enable(temp);
+
+            return -RT_ETIMEOUT;
+        }
+
+        /* 消息队列为空 */
+        while (mq->entry == 0) {					(8)
+            RT_DEBUG_IN_THREAD_CONTEXT;
+
+            /* 重置线程中的错误号 */
+            thread->error = RT_EOK;				(9)
+
+            /* 不等待 */
+            if (timeout == 0) {					
+                /* 开中断 */
+                rt_hw_interrupt_enable(temp);
+
+                thread->error = -RT_ETIMEOUT;
+
+                return -RT_ETIMEOUT;
+            }
+
+            /* 挂起当前线程 */
+            rt_ipc_list_suspend(&(mq->parent.suspend_thread),	(10)
+                                thread,
+                                mq->parent.parent.flag);
+
+            /* 有等待时间，启动线程计时器 */
+            if (timeout > 0) {					(11)
+                /* 获取systick定时器时间 */
+                tick_delta = rt_tick_get();
+
+                RT_DEBUG_LOG(RT_DEBUG_IPC, ("set thread:%s to timer list\n",
+                                            thread->name));
+
+                /* 重置线程计时器的超时并启动它 */
+                rt_timer_control(&(thread->thread_timer),		(12)
+                                RT_TIMER_CTRL_SET_TIME,
+                                &timeout);
+                rt_timer_start(&(thread->thread_timer));
+            }
+
+            /* 开中断 */
+            rt_hw_interrupt_enable(temp);
+
+            /* 发起线程调度 */
+            rt_schedule();						(13)
+
+            
+            if (thread->error != RT_EOK) {
+                /* 返回错误 */
+                return thread->error;
+            }
+
+            /* 关中断 */
+            temp = rt_hw_interrupt_disable();
+
+            /* 如果它不是永远等待，然后重新计算超时滴答 */
+            if (timeout > 0) {					
+                tick_delta = rt_tick_get() - tick_delta;
+                timeout -= tick_delta;
+                if (timeout < 0)
+                    timeout = 0;
+            }
+        }
+
+        /* 获取消息 */
+        msg = (struct rt_mq_message *)mq->msg_queue_head;		(14)
+
+        /* 移动消息队列头链表指针 */
+        mq->msg_queue_head = msg->next;				(15)
+        /* 到达队列尾部，设置为NULL  */
+        if (mq->msg_queue_tail == msg)				(16)
+            mq->msg_queue_tail = RT_NULL;
+    
+        /* 记录消息个数，自减一 */	
+        mq->entry --;						(17)
+        
+        /* 开中断 */
+        rt_hw_interrupt_enable(temp);
+    
+        /* 拷贝消息到指定存储地址 */
+        rt_memcpy(buffer, msg + 1, size > mq->msg_size ? mq->msg_size : size); (18)
+    
+        /* 关中断 */
+        temp = rt_hw_interrupt_disable();
+        /*移到空闲链表 */
+        msg->next = (struct rt_mq_message *)mq->msg_queue_free;	(19)
+        mq->msg_queue_free = msg;
+        /* 开中断 */
+        rt_hw_interrupt_enable(temp);
+    
+        RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(mq->parent.parent)));
+    
+        return RT_EOK;
+    }
+    RTM_EXPORT(rt_mq_recv);
 
-1 rt_err_t rt_mq_recv(rt_mq_t mq, **(1)**
-
-2 void \*buffer, **(2)**
-
-3 rt_size_t size, **(3)**
-
-4 rt_int32_t timeout) **(4)**
-
-5 {
-
-6 struct rt_thread \*thread;
-
-7 register rt_ubase_t temp;
-
-8 struct rt_mq_message \*msg;
-
-9 rt_uint32_t tick_delta;
-
-10
-
-11 RT_ASSERT(mq != RT_NULL);
-
-12 RT_ASSERT(buffer != RT_NULL);
-
-13 RT_ASSERT(size != 0); **(5)**
-
-14
-
-15
-
-16 tick_delta = 0;
-
-17 /\* 获取当前的线程 \*/
-
-18 thread = rt_thread_self(); **(6)**
-
-19 RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(mq->parent.parent)));
-
-20
-
-21 /\* 关中断 \*/
-
-22 temp = rt_hw_interrupt_disable();
-
-23
-
-24 /\* 非阻塞情况 \*/
-
-25 if (mq->entry == 0 && timeout == 0) { **(7)**
-
-26 rt_hw_interrupt_enable(temp);
-
-27
-
-28 return -RT_ETIMEOUT;
-
-29 }
-
-30
-
-31 /\* 消息队列为空 \*/
-
-32 while (mq->entry == 0) { **(8)**
-
-33 RT_DEBUG_IN_THREAD_CONTEXT;
-
-34
-
-35 /\* 重置线程中的错误号 \*/
-
-36 thread->error = RT_EOK; **(9)**
-
-37
-
-38 /\* 不等待 \*/
-
-39 if (timeout == 0) {
-
-40 /\* 开中断 \*/
-
-41 rt_hw_interrupt_enable(temp);
-
-42
-
-43 thread->error = -RT_ETIMEOUT;
-
-44
-
-45 return -RT_ETIMEOUT;
-
-46 }
-
-47
-
-48 /\* 挂起当前线程 \*/
-
-49 rt_ipc_list_suspend(&(mq->parent.suspend_thread), **(10)**
-
-50 thread,
-
-51 mq->parent.parent.flag);
-
-52
-
-53 /\* 有等待时间，启动线程计时器 \*/
-
-54 if (timeout > 0) { **(11)**
-
-55 /\* 获取systick定时器时间 \*/
-
-56 tick_delta = rt_tick_get();
-
-57
-
-58 RT_DEBUG_LOG(RT_DEBUG_IPC, ("set thread:%s to timer list\n",
-
-59 thread->name));
-
-60
-
-61 /\* 重置线程计时器的超时并启动它 \*/
-
-62 rt_timer_control(&(thread->thread_timer), **(12)**
-
-63 RT_TIMER_CTRL_SET_TIME,
-
-64 &timeout);
-
-65 rt_timer_start(&(thread->thread_timer));
-
-66 }
-
-67
-
-68 /\* 开中断 \*/
-
-69 rt_hw_interrupt_enable(temp);
-
-70
-
-71 /\* 发起线程调度 \*/
-
-72 rt_schedule(); **(13)**
-
-73
-
-74
-
-75 if (thread->error != RT_EOK) {
-
-76 /\* 返回错误 \*/
-
-77 return thread->error;
-
-78 }
-
-79
-
-80 /\* 关中断 \*/
-
-81 temp = rt_hw_interrupt_disable();
-
-82
-
-83 /\* 如果它不是永远等待，然后重新计算超时滴答 \*/
-
-84 if (timeout > 0) {
-
-85 tick_delta = rt_tick_get() - tick_delta;
-
-86 timeout -= tick_delta;
-
-87 if (timeout < 0)
-
-88 timeout = 0;
-
-89 }
-
-90 }
-
-91
-
-92 /\* 获取消息 \*/
-
-93 msg = (struct rt_mq_message \*)mq->msg_queue_head; **(14)**
-
-94
-
-95 /\* 移动消息队列头链表指针 \*/
-
-96 mq->msg_queue_head = msg->next; **(15)**
-
-97 /\* 到达队列尾部，设置为NULL \*/
-
-98 if (mq->msg_queue_tail == msg) **(16)**
-
-99 mq->msg_queue_tail = RT_NULL;
-
-100
-
-101 /\* 记录消息个数，自减一 \*/
-
-102 mq->entry --; **(17)**
-
-103
-
-104 /\* 开中断 \*/
-
-105 rt_hw_interrupt_enable(temp);
-
-106
-
-107 /\* 拷贝消息到指定存储地址 \*/
-
-108 rt_memcpy(buffer, msg + 1, size > mq->msg_size ? mq->msg_size : size); **(18)**
-
-109
-
-110 /\* 关中断 \*/
-
-111 temp = rt_hw_interrupt_disable();
-
-112 /*移到空闲链表 \*/
-
-113 msg->next = (struct rt_mq_message \*)mq->msg_queue_free; **(19)**
-
-114 mq->msg_queue_free = msg;
-
-115 /\* 开中断 \*/
-
-116 rt_hw_interrupt_enable(temp);
-
-117
-
-118 RT_OBJECT_HOOK_CALL(rt_object_take_hook, (&(mq->parent.parent)));
-
-119
-
-120 return RT_EOK;
-
-121 }
-
-122 RTM_EXPORT(rt_mq_recv);
 
 代码清单 18‑8\ **(1)**\ ：消息队列对象的句柄。
 
@@ -908,33 +612,26 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 
 代码清单 18‑8\ **(19)**\ ：获取一个消息后，消息队列上的头链表消息被转移到空闲消息链表中，相当消息的删除操作，这样子可以保证消息队列的循环利用，而不会导致头链表指针移动到队列尾部时没有可用的消息节点。
 
-根据这些函数源码，我们能很轻松对它进行使用操作，下面让我们来进行队列接收操作吧，这个函数用于读取指定队列中的数据，并将获取的数据存储到buffer指定的地址。要读取的数据的地址和大小为size，由用户定义，具体使用实例见代码清单 18‑9加粗部分。
+根据这些函数源码，我们能很轻松对它进行使用操作，下面让我们来进行队列接收操作吧，这个函数用于读取指定队列中的数据，并将获取的数据存储到buffer指定的地址。要读取的数据的地址和大小为size，由用户定义，具体使用实例见代码清单 18‑9高亮部分。
 
-代码清单 18‑9消息队列接收消息函数rt_mq_recv()实例
+.. code-block:: c
+    :caption: 代码清单 18‑9消息队列接收消息函数rt_mq_recv()实例
+    :emphasize-lines: 2-5
+    :linenos:
 
-1 /\* 队列读取（接收），等待时间为一直等待 \*/
+    /* 队列读取（接收），等待时间为一直等待 */
+    uwRet = rt_mq_recv(test_mq,	/* 读取（接收）队列的ID(句柄) */
+                    &r_queue,	/* 读取（接收）的数据保存位置 */
+                    sizeof(r_queue), /* 读取（接收）的数据的长度 */
+                    RT_WAITING_FOREVER); /* 等待时间：一直等 */
+    if (RT_EOK == uwRet)
+    {
+        rt_kprintf("本次接收到的数据是：%d\n",r_queue);
+    } else
+    {
+        rt_kprintf("数据接收出错,错误代码: 0x%lx\n",uwRet);
+    }
 
-**2 uwRet = rt_mq_recv(test_mq, /\* 读取（接收）队列的ID(句柄) \*/**
-
-**3 &r_queue, /\* 读取（接收）的数据保存位置 \*/**
-
-**4 sizeof(r_queue), /\* 读取（接收）的数据的长度 \*/**
-
-**5 RT_WAITING_FOREVER); /\* 等待时间：一直等 \*/**
-
-6 if (RT_EOK == uwRet)
-
-7 {
-
-8 rt_kprintf("本次接收到的数据是：%d\n",r_queue);
-
-9 } else
-
-10 {
-
-11 rt_kprintf("数据接收出错,错误代码: 0x%lx\n",uwRet);
-
-12 }
 
 消息队列使用注意事项
 ~~~~~~~~~~
@@ -953,321 +650,171 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 ~~~~~~
 
 消息队列实验是在RT-Thread中创建了两个线程，一个是发送消息线程，一个是获取消息线程，两个线程独立运行，发送消息线程是通过检测按键的按下情况来发送消息，假如发送消息不成功，就把返回的错误情代码在串口打印出来，另一个线程是获取消息线程，在消息队列没有消息之前一直等待消息，一旦获取到消息就把消息打
-印在串口调试助手里，具体见代码清单 18‑10加粗部分。
+印在串口调试助手里，具体见代码清单 18‑10高亮部分。
 
 注意：在使用消息队列时候请确保在rtconfig.h中打开RT_USING_MESSAGEQUEUE这个宏定义。
 
-代码清单 18‑10消息队列实验
+.. code-block:: c
+    :caption: 代码清单 18‑10消息队列实验
+    :emphasize-lines: 34-35,65-70,107-153
+    :linenos:
+
+    /**
+    *********************************************************************
+    * @file    main.c
+    * @author  fire
+    * @version V1.0
+    * @date    2018-xx-xx
+    * @brief   RT-Thread 3.0 + STM32 消息队列
+    *********************************************************************
+    * @attention
+    *
+    * 实验平台:基于野火STM32全系列（M3/4/7）开发板
+    * 论坛    :http://www.firebbs.cn
+    * 淘宝    :https://fire-stm32.taobao.com
+    *
+    **********************************************************************
+    */
+
+    /*
+    *************************************************************************
+    *                             包含的头文件
+    *************************************************************************
+    */
+    #include "board.h"
+    #include "rtthread.h"
+
+
+    /*
+    *************************************************************************
+    *                               变量
+    *************************************************************************
+    */
+    /* 定义线程控制块 */
+    static rt_thread_t receive_thread = RT_NULL;
+    static rt_thread_t send_thread = RT_NULL;
+    /* 定义消息队列控制块 */
+    static rt_mq_t test_mq = RT_NULL;
+    /*
+    *************************************************************************
+    *                             函数声明
+    *************************************************************************
+    */
+    static void receive_thread_entry(void* parameter);
+    static void send_thread_entry(void* parameter);
+
+    /*
+    *************************************************************************
+    *                             main 函数
+    *************************************************************************
+    */
+    /**
+    * @brief  主函数
+    * @param  无
+    * @retval 无
+    */
+    int main(void)
+    {
+        /*
+        * 开发板硬件初始化，RTT系统初始化已经在main函数之前完成，
+        * 即在component.c文件中的rtthread_startup()函数中完成了。
+        * 所以在main函数中，只需要创建线程和启动线程即可。
+        */
+        rt_kprintf("这是一个[野火]-STM32全系列开发板RTT消息队列实验！\n");
+        rt_kprintf("按下K1或者K2发送队列消息\n");
+        rt_kprintf("receive线程接收到消息在串口回显\n");
+        /* 创建一个消息队列 */
+        test_mq = rt_mq_create("test_mq",/* 消息队列名字 */
+                            40,     /* 消息的最大长度 */
+                            20,    /* 消息队列的最大容量 */
+                            RT_IPC_FLAG_FIFO);/* 队列模式 FIFO(0x00)*/
+        if (test_mq != RT_NULL)
+            rt_kprintf("消息队列创建成功！\n\n");
+
+        receive_thread =                          /* 线程控制块指针 */
+            rt_thread_create( "receive",              /* 线程名字 */
+                            receive_thread_entry,   /* 线程入口函数 */
+                            RT_NULL,             /* 线程入口函数参数 */
+                            512,                 /* 线程栈大小 */
+                            3,                   /* 线程的优先级 */
+                            20);                 /* 线程时间片 */
+
+        /* 启动线程，开启调度 */
+        if (receive_thread != RT_NULL)
+            rt_thread_startup(receive_thread);
+        else
+            return -1;
+
+        send_thread =                          /* 线程控制块指针 */
+            rt_thread_create( "send",              /* 线程名字 */
+                            send_thread_entry,   /* 线程入口函数 */
+                            RT_NULL,             /* 线程入口函数参数 */
+                            512,                 /* 线程栈大小 */
+                            2,                   /* 线程的优先级 */
+                            20);                 /* 线程时间片 */
+
+        /* 启动线程，开启调度 */
+        if (send_thread != RT_NULL)
+            rt_thread_startup(send_thread);
+        else
+            return -1;
+    }
+    
+    /*
+    ****************************************************************
+    *                             线程定义
+    *****************************************************************
+    */
+    
+    static void receive_thread_entry(void* parameter)
+    {
+        rt_err_t uwRet = RT_EOK;
+        uint32_t r_queue;
+        /* 线程都是一个无限循环，不能返回 */
+        while (1) {
+            /* 队列读取（接收），等待时间为一直等待 */
+            uwRet = rt_mq_recv(test_mq,	/* 读取（接收）队列的ID(句柄) */
+                                &r_queue,	/* 读取（接收）的数据保存位置 */
+                                sizeof(r_queue), /* 读取（接收）的数据的长度 */
+                                RT_WAITING_FOREVER); /* 等待时间：一直等 */
+            if (RT_EOK == uwRet) {
+                rt_kprintf("本次接收到的数据是：%d\n",r_queue);
+            } else {
+                rt_kprintf("数据接收出错,错误代码: 0x%lx\n",uwRet);
+            }
+            rt_thread_delay(200);
+        }
+    }
+    
+    static void send_thread_entry(void* parameter)
+    {
+        rt_err_t uwRet = RT_EOK;
+        uint32_t send_data1 = 1;
+        uint32_t send_data2 = 2;
+        while (1) { /* K1 被按下 *
+            if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) {/
+                /* 将数据写入（发送）到队列中，等待时间为 0  */
+                uwRet = rt_mq_send(test_mq,/* 写入（发送）队列的ID(句柄) */
+                                &send_data1,/* 写入（发送）的数据 */
+                                sizeof(send_data1)); /* 数据的长度 */
+                if (RT_EOK != uwRet) {
+                    rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
+                }
+            }/* K2 被按下 */
+            if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) { 
+                /* 将数据写入（发送）到队列中，等待时间为 0  */
+                uwRet = rt_mq_send(test_mq,	/* 写入（发送）队列的ID(句柄) */
+                                    &send_data2,	/* 写入（发送）的数据 */
+                                    sizeof(send_data2));	/* 数据的长度 */
+                if (RT_EOK != uwRet) {
+                    rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);
+                }
+            }
+            rt_thread_delay(20);
+        }
+    }
+    /***************************END OF FILE*************************/
 
-1 /*\*
-
-2 \\*
-
-3 \* @file main.c
-
-4 \* @author fire
-
-5 \* @version V1.0
-
-6 \* @date 2018-xx-xx
-
-7 \* @brief RT-Thread 3.0 + STM32 消息队列
-
-8 \\*
-
-9 \* @attention
-
-10 \*
-
-11 \* 实验平台:基于野火STM32全系列（M3/4/7）开发板
-
-12 \* 论坛 :http://www.firebbs.cn
-
-13 \* 淘宝 :https://fire-stm32.taobao.com
-
-14 \*
-
-15 \\*
-
-16 \*/
-
-17
-
-18 /\*
-
-19 \\*
-
-20 \* 包含的头文件
-
-21 \\*
-
-22 \*/
-
-23 #include "board.h"
-
-24 #include "rtthread.h"
-
-25
-
-26
-
-27 /\*
-
-28 \\*
-
-29 \* 变量
-
-30 \\*
-
-31 \*/
-
-32 /\* 定义线程控制块 \*/
-
-33 static rt_thread_t receive_thread = RT_NULL;
-
-34 static rt_thread_t send_thread = RT_NULL;
-
-**35 /\* 定义消息队列控制块 \*/**
-
-**36 static rt_mq_t test_mq = RT_NULL;**
-
-37 /\*
-
-38 \\*
-
-39 \* 函数声明
-
-40 \\*
-
-41 \*/
-
-42 static void receive_thread_entry(void\* parameter);
-
-43 static void send_thread_entry(void\* parameter);
-
-44
-
-45 /\*
-
-46 \\*
-
-47 \* main 函数
-
-48 \\*
-
-49 \*/
-
-50 /*\*
-
-51 \* @brief 主函数
-
-52 \* @param 无
-
-53 \* @retval 无
-
-54 \*/
-
-55 int main(void)
-
-56 {
-
-57 /\*
-
-58 \* 开发板硬件初始化，RTT系统初始化已经在main函数之前完成，
-
-59 \* 即在component.c文件中的rtthread_startup()函数中完成了。
-
-60 \* 所以在main函数中，只需要创建线程和启动线程即可。
-
-61 \*/
-
-62 rt_kprintf("这是一个[野火]-STM32全系列开发板RTT消息队列实验！\n");
-
-63 rt_kprintf("按下K1或者K2发送队列消息\n");
-
-64 rt_kprintf("receive线程接收到消息在串口回显\n");
-
-65 /\* 创建一个消息队列 \*/
-
-**66 test_mq = rt_mq_create("test_mq",/\* 消息队列名字 \*/**
-
-**67 40, /\* 消息的最大长度 \*/**
-
-**68 20, /\* 消息队列的最大容量 \*/**
-
-**69 RT_IPC_FLAG_FIFO);/\* 队列模式 FIFO(0x00)*/**
-
-**70 if (test_mq != RT_NULL)**
-
-**71 rt_kprintf("消息队列创建成功！\n\n");**
-
-72
-
-73 receive_thread = /\* 线程控制块指针 \*/
-
-74 rt_thread_create( "receive", /\* 线程名字 \*/
-
-75 receive_thread_entry, /\* 线程入口函数 \*/
-
-76 RT_NULL, /\* 线程入口函数参数 \*/
-
-77 512, /\* 线程栈大小 \*/
-
-78 3, /\* 线程的优先级 \*/
-
-79 20); /\* 线程时间片 \*/
-
-80
-
-81 /\* 启动线程，开启调度 \*/
-
-82 if (receive_thread != RT_NULL)
-
-83 rt_thread_startup(receive_thread);
-
-84 else
-
-85 return -1;
-
-86
-
-87 send_thread = /\* 线程控制块指针 \*/
-
-88 rt_thread_create( "send", /\* 线程名字 \*/
-
-89 send_thread_entry, /\* 线程入口函数 \*/
-
-90 RT_NULL, /\* 线程入口函数参数 \*/
-
-91 512, /\* 线程栈大小 \*/
-
-92 2, /\* 线程的优先级 \*/
-
-93 20); /\* 线程时间片 \*/
-
-94
-
-95 /\* 启动线程，开启调度 \*/
-
-96 if (send_thread != RT_NULL)
-
-97 rt_thread_startup(send_thread);
-
-98 else
-
-99 return -1;
-
-100 }
-
-101
-
-102 /\*
-
-103 \\*
-
-104 \* 线程定义
-
-105 \\*
-
-106 \*/
-
-107
-
-**108 static void receive_thread_entry(void\* parameter)**
-
-**109 {**
-
-**110 rt_err_t uwRet = RT_EOK;**
-
-**111 uint32_t r_queue;**
-
-**112 /\* 线程都是一个无限循环，不能返回 \*/**
-
-**113 while (1) {**
-
-**114 /\* 队列读取（接收），等待时间为一直等待 \*/**
-
-**115 uwRet = rt_mq_recv(test_mq, /\* 读取（接收）队列的ID(句柄) \*/**
-
-**116 &r_queue, /\* 读取（接收）的数据保存位置 \*/**
-
-**117 sizeof(r_queue), /\* 读取（接收）的数据的长度 \*/**
-
-**118 RT_WAITING_FOREVER); /\* 等待时间：一直等 \*/**
-
-**119 if (RT_EOK == uwRet) {**
-
-**120 rt_kprintf("本次接收到的数据是：%d\n",r_queue);**
-
-**121 } else {**
-
-**122 rt_kprintf("数据接收出错,错误代码: 0x%lx\n",uwRet);**
-
-**123 }**
-
-**124 rt_thread_delay(200);**
-
-**125 }**
-
-**126 }**
-
-127
-
-**128 static void send_thread_entry(void\* parameter)**
-
-**129 {**
-
-**130 rt_err_t uwRet = RT_EOK;**
-
-**131 uint32_t send_data1 = 1;**
-
-**132 uint32_t send_data2 = 2;**
-
-**133 while (1) { /\* K1 被按下 \**
-
-**134 if ( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == KEY_ON ) {/**
-
-**135 /\* 将数据写入（发送）到队列中，等待时间为 0 \*/**
-
-**136 uwRet = rt_mq_send(test_mq,/\* 写入（发送）队列的ID(句柄) \*/**
-
-**137 &send_data1,/\* 写入（发送）的数据 \*/**
-
-**138 sizeof(send_data1)); /\* 数据的长度 \*/**
-
-**139 if (RT_EOK != uwRet) {**
-
-**140 rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);**
-
-**141 }**
-
-**142 }/\* K2 被按下 \*/**
-
-**143 if ( Key_Scan(KEY2_GPIO_PORT,KEY2_GPIO_PIN) == KEY_ON ) {**
-
-**144 /\* 将数据写入（发送）到队列中，等待时间为 0 \*/**
-
-**145 uwRet = rt_mq_send(test_mq, /\* 写入（发送）队列的ID(句柄) \*/**
-
-**146 &send_data2, /\* 写入（发送）的数据 \*/**
-
-**147 sizeof(send_data2)); /\* 数据的长度 \*/**
-
-**148 if (RT_EOK != uwRet) {**
-
-**149 rt_kprintf("数据不能发送到消息队列！错误代码: %lx\n",uwRet);**
-
-**150 }**
-
-**151 }**
-
-**152 rt_thread_delay(20);**
-
-**153 }**
-
-**154 }**
-
-155 /END OF FILE/
 
 实验现象
 ~~~~
@@ -1275,13 +822,9 @@ Thread提供给我们这个创建函数，爱怎么搞都是我们自己来自�
 将程序编译好，用USB线连接电脑和开发板的USB接口（对应丝印为USB转串口），用DAP仿真器把配套程序下载到野火STM32开发板（具体型号根据你买的板子而定，每个型号的板子都配套有对应的程序），在电脑上打开串口调试助手，然后复位开发板就可以在调试助手中看到rt_kprintf的打印信息，按下开发版
 的K1按键发送消息1，按下K2按键发送消息2；我们按下K1试试，在串口调试助手中可以看到接收到消息1，我们按下K2试试，在串口调试助手中可以看到接收到消息2，具体见图 18‑2。
 
-|messag003|
+.. image:: media/message_queue/messag003.png
+    :align: center
+    :alt: 图 18‑2消息队列实验现象
 
 图 18‑2消息队列实验现象
 
-.. |messag002| image:: media/message_queue/messag002.png
-   :width: 5.58643in
-   :height: 2.05556in
-.. |messag003| image:: media/message_queue/messag003.png
-   :width: 5.76806in
-   :height: 2.86611in
