@@ -1,17 +1,18 @@
 .. vim: syntax=rst
 
 对象容器的实现
-=====
+===============
 
 什么是对象
-~~~~~
+~~~~~~~~~~~~
 
 在RT-Thread中，所有的数据结构都称之为对象。
 
 对象枚举定义
------
+------------------------
 
-其中线程，信号量，互斥量、事件、邮箱、消息队列、内存堆、内存池、设备和定时器在rtdef.h中有明显的枚举定义，即为每个对象打上了一个数字标签，具体见代码清单 8‑1。
+其中线程，信号量，互斥量、事件、邮箱、消息队列、内存堆、内存池、设备和定时器在rtdef.h中有明显的枚举定
+义，即为每个对象打上了一个数字标签，具体见代码清单 8‑1。
 
 .. code-block:: c
     :caption: 代码清单 8‑1 对象类型枚举定义
@@ -36,7 +37,7 @@
 
 
 对象数据类型定义
------
+------------------------
 
 在rtt中，为了方便管理这些对象，专门定义了一个对象类型数据结构，具体见代码清单 8‑2。
 
@@ -55,7 +56,8 @@
 
 代码清单 8‑2\ **(1)**\ ：对象名字，字符串形式，方便调试，最大长度由rt_config.h中的宏RT_NAMA_MAX决定，默认定义为8。
 
-代码清单 8‑2\ **(2)**\ ：对象的类型，RT-Thread为每一个对象都打上了数字标签，取值由rt_object_class_type 枚举类型限定，具体见代码清单 8‑1。
+代码清单 8‑2\ **(2)**\ ：对象的类型，RT-Thread为每一个对象都打上了数字标签，
+取值由rt_object_class_type 枚举类型限定，具体见代码清单 8‑1。
 
 代码清单 8‑2\ **(3)**\ ：对象的状态。
 
@@ -64,10 +66,13 @@
 代码清单 8‑2\ **(5)**\ ：对象数据类型，RT-Thread中会为每一个新的结构体用typedef重定义一个指针类型的数据结构。
 
 在线程控制块中添加对象成员
------
+----------------------------
 
-在RT-Thread中，每个对象都会有对应的一个结构体，这个结构体叫做该对象的控制块。如线程会有一个线程控制块，定时器会有一个定时器控制块，信号量会有信号量控制块等。这些控制块的开头都会包含一个内核对象结构体，或者直接将对象结构体的成员放在对象控制块结构体的开头。其中线程控制块的开头放置的就是对象结
-构体的成员，具体见代码清单 8‑3开头的高亮部分代码。这里我们只讲解往线程控制块里面添加对象结构体成员，其它内核对象的都是直接在其开头使用struct rt_object 直接定义一个内核对象变量。
+在RT-Thread中，每个对象都会有对应的一个结构体，这个结构体叫做该对象的控制块。如线程会有一个线程控制块，
+定时器会有一个定时器控制块，信号量会有信号量控制块等。这些控制块的开头都会包含一个内核对象结构体，
+或者直接将对象结构体的成员放在对象控制块结构体的开头。其中线程控制块的开头放置的就是对象结
+构体的成员，具体见代码清单 8‑3开头的高亮部分代码。这里我们只讲解往线程控制块里面添加对象结构体成员，
+其它内核对象的都是直接在其开头使用struct rt_object 直接定义一个内核对象变量。
 
 .. code-block:: c
     :caption: 代码清单 8‑3 在线程控制块中添加对象成员
@@ -84,21 +89,22 @@
         rt_list_t   tlist;                /* 线程链表节点 */
         void        *sp;	              /* 线程栈指针 */
         void        *entry;	              /* 线程入口地址 */
-        void        *parameter;	          /* 线程形参 */	
+        void        *parameter;	          /* 线程形参 */
         void        *stack_addr;          /* 线程起始地址 */
         rt_uint32_t stack_size;           /* 线程栈大小，单位为字节 */
     };
 
 什么是容器
-~~~~~
+~~~~~~~~~~~~
 
 在rtt中，每当用户创建一个对象，如线程，就会将这个对象放到一个叫做容器的地方，这样做的目的是为了方便管理，这时用户会问，管理什么？在RT-
 Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器的内核对象来获取各个内核对象的状态，然后输出调试信息。目前，我们只需要知道所有创建的对象都会被放到容器中即可。
 
-那什么是容器，从代码上看，容器就是一个数组，是一个全局变量，数据类型为struct rt_object_information，在object.c中定义，具体见代码清单 8‑4，示意图具体见图 8‑1。
+那什么是容器，从代码上看，容器就是一个数组，是一个全局变量，数据类型为struct rt_object_information，
+在object.c中定义，具体见代码清单 8‑4，示意图具体见图 8‑1。
 
 容器的定义
-----
+------------
 
 .. code-block:: c
     :caption: 代码清单 8‑4 rtt容器的定义
@@ -113,89 +119,89 @@ Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器
             _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Thread),                             (1)
             sizeof(struct rt_thread)                         (3)-3
         },
-            
+
     #ifdef RT_USING_SEMAPHORE                                (4)
         /* 初始化对象容器 - 信号量 */
         {
-            RT_Object_Class_Semaphore, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Semaphore), 
+            RT_Object_Class_Semaphore,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Semaphore),
             sizeof(struct rt_semaphore)
         },
-    #endif		
-            
+    #endif
+
     #ifdef RT_USING_MUTEX                                    (5)
         /* 初始化对象容器 - 互斥量 */
         {
-            RT_Object_Class_Mutex, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Mutex), 
+            RT_Object_Class_Mutex,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Mutex),
             sizeof(struct rt_mutex)
         },
-    #endif		
-            
+    #endif
+
     #ifdef RT_USING_EVENT                                    (6)
         /* 初始化对象容器 - 事件 */
         {
-            RT_Object_Class_Event, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Event), 
+            RT_Object_Class_Event,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Event),
             sizeof(struct rt_event)
         },
     #endif
-            
+
     #ifdef RT_USING_MAILBOX                                  (7)
         /* 初始化对象容器 - 邮箱 */
         {
-            RT_Object_Class_MailBox, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MailBox), 
+            RT_Object_Class_MailBox,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MailBox),
             sizeof(struct rt_mailbox)
         },
-    #endif	
-            
+    #endif
+
     #ifdef RT_USING_MESSAGEQUEUE                             (8)
         /* 初始化对象容器 - 消息队列 */
         {
-            RT_Object_Class_MessageQueue, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MessageQueue), 
+            RT_Object_Class_MessageQueue,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MessageQueue),
             sizeof(struct rt_messagequeue)
         },
-    #endif		
-            
+    #endif
+
     #ifdef RT_USING_MEMHEAP                                  (9)
         /* 初始化对象容器 - 内存堆 */
         {
-            RT_Object_Class_MemHeap, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MemHeap), 
+            RT_Object_Class_MemHeap,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MemHeap),
             sizeof(struct rt_memheap)
         },
-    #endif		
-            
+    #endif
+
     #ifdef RT_USING_MEMPOOL                                  (10)
         /* 初始化对象容器 - 内存池 */
         {
-            RT_Object_Class_MemPool, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MemPool), 
+            RT_Object_Class_MemPool,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_MemPool),
             sizeof(struct rt_mempool)
         },
-    #endif		
-        
+    #endif
+
     #ifdef RT_USING_DEVICE                                   (11)
         /* 初始化对象容器 - 设备 */
         {
-            RT_Object_Class_Device, 
+            RT_Object_Class_Device,
             _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Device), sizeof(struct rt_device)},
     #endif
         /* 初始化对象容器 - 定时器 */                          (12)
         /*
         {
-            RT_Object_Class_Timer, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Timer), 
+            RT_Object_Class_Timer,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Timer),
             sizeof(struct rt_timer)
         },
         */
     #ifdef RT_USING_MODULE                                   (13)
         /* 初始化对象容器 - 模块 */
         {
-            RT_Object_Class_Module, 
-            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Module), 
+            RT_Object_Class_Module,
+            _OBJ_CONTAINER_LIST_INIT(RT_Object_Info_Module),
             sizeof(struct rt_module)
         },
     #endif
@@ -207,26 +213,31 @@ Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器
 
 图 8‑1 对象容器示意图
 
-代码清单 8‑4 **(1)**\ ：容器是一个全部变量的数组，数据类型为struct rt_object_information，这是一个结构体类型，包含对象的三个信息，分别为对象类型、对象列表节点头和对象的大小，在rtdef.h中定义，具体实现见代码清单 8‑5。
+代码清单 8‑4 **(1)**\ ：容器是一个全部变量的数组，数据类型为struct rt_object_information，
+这是一个结构体类型，包含对象的三个信息，分别为对象类型、对象列表节点头和对象的大小，在rtdef.h中定义，
+具体实现见代码清单 8‑5。
 
 .. code-block:: c
     :caption: 代码清单 8‑5 内核对象信息结构体定义
     :linenos:
 
-    struct rt_object_information 
+    struct rt_object_information
     {
         enum rt_object_class_type type;//  (1) /* 对象类型 */
         rt_list_t object_list;//           (2) /* 对象列表节点头 */
         rt_size_t object_size;//           (3) /* 对象大小 */
     };
 
-代码清单 8‑5 **(1)**\ ：对象的类型，取值只能是rt_object_class_type枚举类型，具体取值见代码清单 8‑1。
+代码清单 8‑5 **(1)**\ ：对象的类型，取值只能是rt_object_class_type枚举类型，
+具体取值见代码清单 8‑1。
 
-代码清单 8‑5 **(2)**\ ：对象列表节点头，每当对象创建时，对象就会通过他们控制块里面的list节点将自己挂到对象容器中的对应列表，同一类型的对象是挂到对象容器中同一个对象列表的，容器数组的小标对应的就是对象的类型。
+代码清单 8‑5 **(2)**\ ：对象列表节点头，每当对象创建时，对象就会通过他们控制块里面
+的list节点将自己挂到对象容器中的对应列表，同一类型的对象是挂到对象容器中同一个对象列表的，容器数组的小标对应的就是对象的类型。
 
 代码清单 8‑5\ **(3)**\ ：对象的大小，可直接通过sizeof(对象控制块类型)获取。
 
-代码清单 8‑4 **(2)**\ ：容器的大小由RT_Object_Info_Unknown决定，RT_Object_Info_Unknown是一个枚举类型的变量，在rt_object_info_type这个枚举结构体里面定义，具体见代码清单 8‑6。
+代码清单 8‑4 **(2)**\ ：容器的大小由RT_Object_Info_Unknown决定，RT_Object_Info_Unknown是
+一个枚举类型的变量，在rt_object_info_type这个枚举结构体里面定义，具体见代码清单 8‑6。
 
 .. code-block:: c
     :caption: 代码清单 8‑6 对象容器数组的下标定义
@@ -268,15 +279,22 @@ Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器
         RT_Object_Info_Unknown,                /* 对象未知 */
     };
 
-从代码清单 8‑6可以看出RT_Object_Info_Unknown位于枚举结构体的最后，它的具体取值由前面的成员多少决定，前面的成员是否有效都是通过宏定义来决定的，只有当在rtconfig.h中定义了相应的宏，对应的枚举成员才会有效，默认在这些宏都没有定义的情况下只有RT_Object_Info
-_Thread和RT_Object_Info_Timer有效，此时RT_Object_Info_Unknown的值等于2。当这些宏全部有效，RT_Object_Info_Unknown的值等于11，即容器的大小为12，此时是最大。C语言知识：如果枚举类型的成员值没有具体指定，那么后一个值是在前一个成
+从代码清单 8‑6可以看出RT_Object_Info_Unknown位于枚举结构体的最后，它的具体取值由前面的成员多少决定，
+前面的成员是否有效都是通过宏定义来决定的，只有当在rtconfig.h中定义了相应的宏，对应的枚举成员才会有效，
+默认在这些宏都没有定义的情况下只有RT_Object_Info_Thread和RT_Object_Info_Timer有效，
+此时RT_Object_Info_Unknown的值等于2。当这些宏全部有效，RT_Object_Info_Unknown的值等于11，
+即容器的大小为12，此时是最大。C语言知识：如果枚举类型的成员值没有具体指定，那么后一个值是在前一个成
 员值的基础上加1。
 
-代码清单 8‑4 **(3)**\ ：初始化对象容器—线程，线程是rtt里面最基本的对象，是必须存在的，跟其它的对象不一样，没有通过宏定义来选择，接下来下面的信号量、邮箱都通过对应的宏定义来控制是否初始化，即只有在创建了相应的对象后，才在对象容器里面初始化。
+代码清单 8‑4 **(3)**\ ：初始化对象容器—线程，线程是rtt里面最基本的对象，是必须存在的，
+跟其它的对象不一样，没有通过宏定义来选择，接下来下面的信号量、邮箱都通过对应的宏定义来控
+制是否初始化，即只有在创建了相应的对象后，才在对象容器里面初始化。
 
 代码清单 8‑4 **(3)-1**\ ：初始化对象类型为线程。
 
-代码清单 8‑4 **(3)-2**\ ：初始化对象列表节点头里面的next和prev两个节点指针分别指向自身，具体见图 8‑1。_OBJ_CONTAINER_LIST_INIT()是一个带参宏，用于初始化一个节点list，在object.c中定义，具体见代码清单 8‑7。
+代码清单 8‑4 **(3)-2**\ ：初始化对象列表节点头里面的next和prev两个节点指针分别指向自身，
+具体见图 8‑1。_OBJ_CONTAINER_LIST_INIT()是一个带参宏，用于初始化一个节点list，在object.c中定义，
+具体见代码清单 8‑7。
 
 
 .. code-block:: c
@@ -304,17 +322,18 @@ _Thread和RT_Object_Info_Timer有效，此时RT_Object_Info_Unknown的值等于2
 
 代码清单 8‑4 **(11)**\ ：初始化对象容器—设备，由宏RT_USING_DEVICE决定。
 
-代码清单 8‑4 **(12)**\ ：初始化对象容器—定时器，每个线程在创建的时候都会自带一个定时器，但是目前我们还没有在线程中加入定时器，所以这部分初始化我们先注释掉，等加入定时器的时候再释放。
+代码清单 8‑4 **(12)**\ ：初始化对象容器—定时器，每个线程在创建的时候都会自带一个定时器，
+但是目前我们还没有在线程中加入定时器，所以这部分初始化我们先注释掉，等加入定时器的时候再释放。
 
 代码清单 8‑4 **(13)**\ ：初始化对象容器—模块，由宏RT_USING_MODULE决定。
 
 容器的接口实现
-~~~~~~~
+~~~~~~~~~~~~~~
 
 容器接口相关的函数均在object.c中实现。
 
 获取指定类型的对象信息
-------
+-------------------------
 
 从容器中获取指定类型的对象的信息由函数rt_object_get_information()实现，具体定义见代码清单 8‑8。
 
@@ -337,9 +356,10 @@ _Thread和RT_Object_Info_Timer有效，此时RT_Object_Info_Unknown的值等于2
 类型等于我们指定的类型，那么就返回该容器成员的地址，地址的类型为struct rt_object_information。
 
 对象初始化
------
+------------------------
 
-每创建一个对象，都需要先将其初始化，主要分成两个部分的工作，首先将对象控制块里面与对象相关的成员初始化，然后将该对象插入到对象容器中，具体的代码实现见代码清单 8‑9。
+每创建一个对象，都需要先将其初始化，主要分成两个部分的工作，首先将对象控制块里面与对象相关的成员初始化，
+然后将该对象插入到对象容器中，具体的代码实现见代码清单 8‑9。
 
 .. code-block:: c
     :caption: 代码清单 8‑9 对象初始化rt_object_init()函数定义
@@ -379,8 +399,9 @@ _Thread和RT_Object_Info_Timer有效，此时RT_Object_Info_Unknown的值等于2
         rt_hw_interrupt_enable(temp);
     }
 
-代码清单 8‑9\ **(1)**\ ：要初始化的对象。我们知道每个对象的控制块开头的成员都是对象信息相关的成员，比如一个线程控制块，它的开头前面4个成员都是与对象信息相关的，在调用rt_object_init()函数的时候，只需将线程控制块强制类型转化为struct
-rt_object作为第一个形参即可。
+代码清单 8‑9\ **(1)**\ ：要初始化的对象。我们知道每个对象的控制块开头的成员都是对象信息相关的成员，
+比如一个线程控制块，它的开头前面4个成员都是与对象信息相关的，在调用rt_object_init()函数的时候，
+只需将线程控制块强制类型转化为structrt_object作为第一个形参即可。
 
 代码清单 8‑9\ **(2)**\ ：对象的类型，是一个数字化的枚举值，具体见代码清单 8‑1。
 
@@ -390,7 +411,9 @@ rt_object作为第一个形参即可。
 
 代码清单 8‑9\ **(5)**\ ：设置对象类型为静态。
 
-代码清单 8‑9\ **(6)**\ ：拷贝名字。rt_strncpy()是字符串拷贝函数，在kservice.c（kservice.c第一次使用需要在rtthread\3.0.3\src下新建，然后添加到工程rtt/source组中）中定义，在rtthread.h声明，具体代码实现见代码清单
+代码清单 8‑9\ **(6)**\ ：拷贝名字。rt_strncpy()是字符串拷贝函数，
+在kservice.c（kservice.c第一次使用需要在rtthread\3.0.3\src下新建，然后添加到工程rtt/source组中）
+中定义，在rtthread.h声明，具体代码实现见代码清单
 8‑10。
 
 .. code-block:: c
@@ -399,7 +422,7 @@ rt_object作为第一个形参即可。
 
     /**
     * 该函数将指定个数的字符串从一个地方拷贝到另外一个地方
-    * 
+    *
     * @param dst 字符串拷贝的目的地
     * @param src 字符串从哪里拷贝
     * @param n 要拷贝的最大长度
@@ -441,9 +464,10 @@ rt_object作为第一个形参即可。
 代码清单 8‑9\ **(9)**\ ：使能中断。
 
 调用对象初始化函数
------
+--------------------
 
-对象初始化函数在线程初始化函数里面被调用，具体见代码清单 8‑11的高亮部分。如果创建了两个线程，在线程初始化之后，线程通过自身的list节点将自身挂到容器的对象列表中，在容器中的示意图具体见图 8‑2。
+对象初始化函数在线程初始化函数里面被调用，具体见代码清单 8‑11的高亮部分。如果创建了两个线程，
+在线程初始化之后，线程通过自身的list节点将自身挂到容器的对象列表中，在容器中的示意图具体见图 8‑2。
 
 .. code-block:: c
     :caption: 代码清单 8‑11 在线程初始化中添加对象初始化功能
@@ -461,23 +485,23 @@ rt_object作为第一个形参即可。
         /* 线程结构体开头部分的成员就是rt_object_t类型 */
         rt_object_init((rt_object_t)thread, RT_Object_Class_Thread, name);
         rt_list_init(&(thread->tlist));
-        
+
         thread->entry = (void *)entry;
         thread->parameter = parameter;
 
         thread->stack_addr = stack_start;
         thread->stack_size = stack_size;
-        
+
         /* 初始化线程栈，并返回线程栈指针 */
-        thread->sp = (void *)rt_hw_stack_init( thread->entry, 
+        thread->sp = (void *)rt_hw_stack_init( thread->entry,
                                             thread->parameter,
                                             (void *)((char *)thread->stack_addr + thread->stack_size - 4) );
-        
+
         return RT_EOK;
     }
 
 实验现象
-~~~~
+~~~~~~~~
 
 本章没有实验，充分理解本章内容即可。
 
