@@ -257,7 +257,7 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
         RT_ASSERT(mq != RT_NULL);				(1)
 
         /* 恢复所有因为访问此队列而阻塞的线程 */
-        rt_ipc_list_resume_all(&(mq->parent.suspend_thread)); (2)
+        rt_ipc_list_resume_all(&(mq->parent.suspend_thread));   (2)
 
     #if defined(RT_USING_MODULE) && defined(RT_USING_SLAB)
         /*  消息队列对象属于应用程序模块 ，此处不使用 */
@@ -270,7 +270,7 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
             RT_KERNEL_FREE(mq->msg_pool);			(3)
 
         /* 删除消息队列对象 */
-        rt_object_delete(&(mq->parent.parent));		(4)
+        rt_object_delete(&(mq->parent.parent));		        (4)
 
         return RT_EOK;
     }
@@ -314,17 +314,17 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
     :caption: 代码清单 18‑6消息队列发送消息函数rt_mq_send()源码
     :linenos:
 
-    rt_err_t rt_mq_send(rt_mq_t mq, void *buffer, rt_size_t size)	(1)
+    rt_err_t rt_mq_send(rt_mq_t mq, void *buffer, rt_size_t size)(1)
     {
         register rt_ubase_t temp;
         struct rt_mq_message *msg;
 
-        RT_ASSERT(mq != RT_NULL);					(2)
+        RT_ASSERT(mq != RT_NULL);                               (2)
         RT_ASSERT(buffer != RT_NULL);
         RT_ASSERT(size != 0);
 
         /* 判断消息的大小*/
-        if (size > mq->msg_size)					(3)
+        if (size > mq->msg_size)			        (3)
             return -RT_ERROR;
 
         RT_OBJECT_HOOK_CALL(rt_object_put_hook, (&(mq->parent.parent)));
@@ -333,7 +333,7 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
         temp = rt_hw_interrupt_disable();
 
         /* 获取一个空闲链表，必须有一个空闲链表项*/
-        msg = (struct rt_mq_message *)mq->msg_queue_free;		(4)
+        msg = (struct rt_mq_message *)mq->msg_queue_free;      (4)
         /* 消息队列满 */
         if (msg == RT_NULL) {
             /* 开中断 */
@@ -350,7 +350,7 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
         /* 这个消息是新的链表尾部，其下一个指针为RT_NULL /
         msg->next = RT_NULL;
         /* 拷贝数据 */
-        rt_memcpy(msg + 1, buffer, size);				(6)
+        rt_memcpy(msg + 1, buffer, size);		        (6)
 
         /* 关中断 */
         temp = rt_hw_interrupt_disable();
@@ -361,22 +361,22 @@ RT_IPC_FLAG_PRIO与RT_IPC_FLAG_FIFO均在rtdef.h中有定义。
         }
 
         /* 设置新的消息队列尾部链表指针 */
-        mq->msg_queue_tail = msg;					(8)
+        mq->msg_queue_tail = msg;			        (8)
         /*  如果头部链表是空的，设置头部链表指针 */
-        if (mq->msg_queue_head == RT_NULL)				(9)
+        if (mq->msg_queue_head == RT_NULL)	        	(9)
             mq->msg_queue_head = msg;
 
         /* 增加消息数量记录 */
         mq->entry ++;						(10)
 
         /* 恢复挂起线程 */
-        if (!rt_list_isempty(&mq->parent.suspend_thread)) {		(11)
+        if (!rt_list_isempty(&mq->parent.suspend_thread)) {     (11)
             rt_ipc_list_resume(&(mq->parent.suspend_thread));
 
             /* 开中断 */
             rt_hw_interrupt_enable(temp);
 
-            rt_schedule();						(12)
+            rt_schedule();				        (12)
 
             return RT_EOK;
         }
@@ -466,9 +466,9 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
     :linenos:
 
     rt_err_t rt_mq_recv(rt_mq_t    mq,				(1)
-                        void      *buffer,				(2)
-                        rt_size_t  size,				(3)
-                        rt_int32_t timeout)				(4)
+                        void      *buffer,		        (2)
+                        rt_size_t  size,		        (3)
+                        rt_int32_t timeout)		        (4)
     {
         struct rt_thread *thread;
         register rt_ubase_t temp;
@@ -481,7 +481,7 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
 
         tick_delta = 0;
         /* 获取当前的线程 */
-        thread = rt_thread_self();					(6)
+        thread = rt_thread_self();			        (6)
         RT_OBJECT_HOOK_CALL(rt_object_trytake_hook, (&(mq->parent.parent)));
 
         /* 关中断 */
@@ -495,7 +495,7 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
         }
 
         /* 消息队列为空 */
-        while (mq->entry == 0) {					(8)
+        while (mq->entry == 0) {			        (8)
             RT_DEBUG_IN_THREAD_CONTEXT;
 
             /* 重置线程中的错误号 */
@@ -525,7 +525,7 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
                                             thread->name));
 
                 /* 重置线程计时器的超时并启动它 */
-                rt_timer_control(&(thread->thread_timer),		(12)
+                rt_timer_control(&(thread->thread_timer),       (12)
                                 RT_TIMER_CTRL_SET_TIME,
                                 &timeout);
                 rt_timer_start(&(thread->thread_timer));
@@ -535,7 +535,7 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
             rt_hw_interrupt_enable(temp);
 
             /* 发起线程调度 */
-            rt_schedule();						(13)
+            rt_schedule();				        (13)
 
 
             if (thread->error != RT_EOK) {
@@ -556,7 +556,7 @@ RT-Thread的接收消息过程是：接收一个消息后消息队列的头链�
         }
 
         /* 获取消息 */
-        msg = (struct rt_mq_message *)mq->msg_queue_head;		(14)
+        msg = (struct rt_mq_message *)mq->msg_queue_head;       (14)
 
         /* 移动消息队列头链表指针 */
         mq->msg_queue_head = msg->next;				(15)
