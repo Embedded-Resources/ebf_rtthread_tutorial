@@ -222,7 +222,7 @@ M线程开始运行，此时L线程尚未执行完，临界资源还没被释放
 
 .. code-block:: c
     :caption: 代码清单 20‑3互斥量创建函数rt_mutex_create()实例
-    :emphasize-lines: 2-3
+    :emphasize-lines: 2,4
     :linenos:
 
     /* 定义互斥量控制块 */

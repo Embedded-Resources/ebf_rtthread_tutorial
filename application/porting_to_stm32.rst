@@ -1196,7 +1196,7 @@ HAL库驱动中，由于某些外设的驱动需要使用超时判断（比如I2
 
 .. code-block:: c
     :caption: 代码清单 13‑8 core_delay.c文件内容
-    :emphasize-lines: 53-62,80-83
+    :emphasize-lines: 53-62,79-82
     :linenos:
 
     /**

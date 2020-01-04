@@ -158,7 +158,7 @@ RT-Thread的启动流程
 清单 16‑3。复位函数的最后会调用C库函数__main，具体见代码清单 16‑3的高亮部分。__main函数的主要工
 作是初始化系统的堆和栈，最后调用C中的main函数，从而去到C的世界。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑3 Reset_Handler函数
     :emphasize-lines: 15
     :linenos:
@@ -182,12 +182,15 @@ RT-Thread的启动流程
                     ENDP
 
 
-但当我们硬件仿真RT-Thread工程的时候，单步执行完__main之后，并不是跳转到C中的main函数，而是跳转到component.c中的$Sub$$main函数，这是为什么？因为RT-Thread使用编译器（这里仅讲解KEIL，IAR或者GCC稍微有点区别，但是原理是一样的）自带的$Sub$$
-和$Super$$这两个符号来扩展了main函数，使用$Sub$$main可以在执行main之前先执行$Sub$$main，在$Sub$$main函数中我们可以先执行一些预操作，当做完这些预操作之后最终还是要执行main函数，这个就通过调用$Super$$main来实现。当需要扩展的函数不是main
-的时候，只需要将main换成你要扩展的函数名即可，即$Sub$$function和$Super$$function，具体如何使
-用这两个扩展符号的伪代码见代码清单 16‑4。
+但当我们硬件仿真RT-Thread工程的时候，单步执行完__main之后，并不是跳转到C中的main函数，而是跳转
+到component.c中的$Sub$$main函数，这是为什么？因为RT-Thread使用编译器（这里仅讲解KEIL，IAR或
+者GCC稍微有点区别，但是原理是一样的）自带的$Sub$$和$Super$$这两个符号来扩展了main函数，使
+用$Sub$$main可以在执行main之前先执行$Sub$$main，在$Sub$$main函数中我们可以先执行一些预操作，当
+做完这些预操作之后最终还是要执行main函数，这个就通过调用$Super$$main来实现。当需要扩展的函数不
+是main的时候，只需要将main换成你要扩展的函数名即可，即$Sub$$function和$Super$$function，具体如
+何使用这两个扩展符号的伪代码见代码清单 16‑4。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑4 $Sub$$和$Super$$的使用方法
     :linenos:
 
@@ -213,7 +216,7 @@ $Sub$$main函数
 知道了$Sub$$和$Super$$的用法之后，我们回到RT-Thread component.c文件中的的$Sub$$main，具体实
 现见代码清单 16‑5。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑5 main的扩展函数$Sub$$main
     :linenos:
 
@@ -227,7 +230,7 @@ $Sub$$main函数
 代码清单 16‑5\ **(1)**\ ：关闭中断，除了硬FAULT和NMI可以响应外，其它统统关掉。该函数是
 在接口文件contex_rvds.S中由汇编实现的，具体见代码清单 16‑6。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑6 硬件中断失能和使能函数定义
     :linenos:
 
@@ -253,7 +256,7 @@ $Sub$$main函数
 在Cortex-M内核中，为了快速地开关中断， 专门设置了一条 CPS 指令，有 4 种用法，具体见代码清单 16‑7。
 很显然，RT-Thread里面快速关中断的方法就是用了Cortex-M中的CPS指令。
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑7 Cortex-M 内核中快速关中断指令CPS的用法
     :linenos:
 
@@ -338,20 +341,24 @@ rt_show_version()函数是通过调用rt_kprintf函数向控制台打印RT-Threa
         rt_kprintf(" 2006 - 2018 Copyright by rt-thread team\n");
     }
 
+
+
 代码清单 16‑8 **(4)**\ ：定时器初始化，实际上就是初始化一个全局的定时器列表，列表里面存放的是处于延时状态的线程。
 
 代码清单 16‑8 **(5)**\ ：调度器初始化。
 
 代码清单 16‑8 **(6)**\ ：信号初始化，RT_USING_SIGNALS这个宏默认不定义。
 
-代码清单 16‑8 **(7)**\ ：创建初始线程。前面我们说过，RT-
-Thread的启动流程是这样的：即先创建一个初始线程，等调度器启动之后，在这个初始线程里面创建各种应用线程，当所有应用线程都成功创建好后，初始线程就把自己关闭。那么这个初始线程就在rt_application_init()里面创建，该函数也在component.c里面定义，具体实现见代码清单
-16‑10。
+代码清单 16‑8 **(7)**\ ：创建初始线程。前面我们说过，RT-Thread的启动流程
+是这样的：即先创建一个初始线程，等调度器启动之后，在这个初始线程里面创建各
+种应用线程，当所有应用线程都成功创建好后，初始线程就把自己关闭。那么这个初
+始线程就在rt_application_init()里面创建，该函数也在component.c里面定义，
+具体实现见代码清单16‑10。
 
 rt_application_init()函数
 ---------------------------------
 
-.. code-block:: c
+.. code-block::
     :caption: 代码清单 16‑10 创建初始线程
     :linenos:
 

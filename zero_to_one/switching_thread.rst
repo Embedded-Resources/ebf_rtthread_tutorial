@@ -629,6 +629,7 @@ PC指针必须存的是线程的入口地址，R0必须是线程形参，剩下�
 .. code-block:: c
    :caption: 代码清单 6‑18 错误码宏定义
    :linenos:
+
    /* RT-Thread 错误码重定义 */
    #define RT_EOK                          0               /**< There is no error */
    #define RT_ERROR                        1               /**< A generic error happens */
@@ -929,7 +930,7 @@ BLX           跳转到由寄存器REG给出的的地址，并根据 REG 的 LSB
 ============= ==========================================
 
 
-.. code-block:: c
+.. code-block::
    :caption: 代码清单 6‑26 rt_hw_context_switch_to() 函数
    :linenos:
 
@@ -1032,7 +1033,7 @@ BLX           跳转到由寄存器REG给出的的地址，并根据 REG 的 LSB
 具体见代码清单 6‑27，每个变量的含义具体看注释。
 
 .. code-block:: c
-   :caption:代码清单 6‑27 汇编文件导入的三个全局变量定义
+   :caption: 代码清单 6‑27 汇编文件导入的三个全局变量定义
    :linenos:
 
    /* 用于存储上一个线程的栈的sp的指针*/
@@ -1090,7 +1091,7 @@ PendSV_Handler()函数
 
 PendSV_Handler()函数是真正实现线程上下文切换的地方，具体实现见代码清单 6‑28。
 
-.. code-block:: c
+.. code-block::
    :caption: 代码清单 6‑28 PendSV_Handler()函数
    :linenos:
 
@@ -1289,7 +1290,7 @@ rt_hw_contex_switch()函数
 当一个汇编函数在C文件中调用的时候，如果有两个个形参，则执行的时候会将这个形参传传入到CPU寄存器r0、r1。rt_hw_context_switch()具体实现见代码清单 6‑30。
 
 
-.. code-block:: c
+.. code-block::
    :caption: 代码清单 6‑30 rt_hw_context_switch()函数
    :linenos:
 

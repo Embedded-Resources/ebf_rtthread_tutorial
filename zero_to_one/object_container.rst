@@ -52,7 +52,7 @@
         rt_uint8_t flag;          (3) /* 内核对象的状态 */
         rt_list_t list;           (4) /* 内核对象的列表节点 */
     };
-    typedef struct rt_object \*rt_object_t;//(5) /*内核对象数据类型重定义*/
+    typedef struct rt_object *rt_object_t; (5) /*内核对象数据类型重定义*/
 
 代码清单 8‑2\ **(1)**\ ：对象名字，字符串形式，方便调试，最大长度由rt_config.h中的宏RT_NAMA_MAX决定，默认定义为8。
 
@@ -242,6 +242,7 @@ Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器
 .. code-block:: c
     :caption: 代码清单 8‑6 对象容器数组的下标定义
     :linenos:
+
     /*
     * 对象容器数组的下标定义，决定容器的大小
     */
@@ -471,7 +472,7 @@ Thread的组件finsh的使用中，就需要使用到容器，通过扫描容器
 
 .. code-block:: c
     :caption: 代码清单 8‑11 在线程初始化中添加对象初始化功能
-    :emphasize-lines: 8-9
+    :emphasize-lines: 8-10
     :linenos:
 
     rt_err_t rt_thread_init(struct rt_thread *thread,

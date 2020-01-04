@@ -526,7 +526,7 @@ RT_NULL。系统调度函数接下来也需要修改。
 
 .. code-block:: c
     :caption: 代码清单 10‑15 空闲线程初始化函数rt_thread_idle_init()
-    :emphasize-lines: 13-15
+    :emphasize-lines: 12-14
     :linenos:
 
     void rt_thread_idle_init(void)

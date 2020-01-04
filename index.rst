@@ -52,6 +52,7 @@
    application/creating_thread
    application/remaping_rt_kprintf
    application/rtthread_startup
+   application/thread_management.rst
    application/message_queue
    application/semaphore
    application/mutex
