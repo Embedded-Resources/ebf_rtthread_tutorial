@@ -52,16 +52,19 @@ Thread内核应用开发”，重点讲解RT-Thread的移植，内核每个组�
 以无缝地切换到原版的RT-Thread的使用。要注意的是，在实现的过程中，某些函数我会
 去掉一些形参和一些冗余的代码，只保留核心的功能，但这并不会影响我们学习。
 
-本书第二部分主要讲RT-Thread的移植和内核组件的使用，不会再去深入讲解源码，着重讲应用，如果对第一部分不感兴趣的朋友，可以跳过第一部分，直接进入第二部分的学习，两者之间没有必然的联系。
+本书第二部分主要讲RT-Thread的移植和内核组件的使用，不会再去深入讲解源码，着重讲应用，如
+果对第一部分不感兴趣的朋友，可以跳过第一部分，直接进入第二部分的学习，两者之间没有必然的联系。
 
 本书的配套硬件
 ~~~~~~~~~~~~~~~~~~~~
 
-本书支持野火STM32开发板全套系列，具体型号见表格 1‑1，具体图片见图 1‑1、图 1‑3、图 1‑5、图 1‑7和图
-1‑9。其中野火挑战者有三个型号，分别为F429、F767和H743，它们共用同一个底板，只是核心板不一样。学习的时候如果配套这些硬件平台做实验，学习必会达到事半功倍的效果，可以省去中间硬件不一样时移植遇到的各种问题。
+本书支持野火STM32开发板全套系列，具体型号见表格:野火STM32开发板型号汇总，具体图片
+见图 野火MINI开发板_、图 野火指南者开发板_、图 野火霸道开发板_、图 野火霸天虎开发板_ 和
+图 野火挑战者开发板_。其中野火挑战者有三个型号，分别为F429、F767和H743，它们共用同一个底
+板，只是核心板不一样。学习的时候如果配套这些硬件平台做实验，学习必会达到事半功倍的效果，可
+以省去中间硬件不一样时移植遇到的各种问题。
 
-表格 1‑1 野火STM32开发板型号汇总
-
+表格:野火STM32开发板型号汇总
 
 ==========  =========  ====  =====  =====
    型号       内核     引脚   RAM    ROM
@@ -77,45 +80,49 @@ MINI        Cortex-M3  64    48KB   256KB
 
 .. image:: media/foreword/forewo002.png
    :align: center
+   :name: 野火MINI开发板
    :alt: 野火【MINI】STM32F103RCT6 开发板
 
-图 1‑1 野火【MINI】STM32F103RCT6 开发板
+图 野火【MINI】STM32F103RCT6 开发板
 
 .. image:: media/foreword/forewo003.png
    :align: center
    :alt: 野火【MINI】STM32F103RCT6 开发板 带液晶效果图
 
-图 1‑2 野火【MINI】STM32F103RCT6 开发板 带液晶效果图
+图 野火【MINI】STM32F103RCT6 开发板 带液晶效果图
 
 .. image:: media/foreword/forewo004.png
    :align: center
+   :name: 野火指南者开发板
    :alt: 野火【指南者】STM32F103VET6 开发板
 
-图 1‑3 野火【指南者】STM32F103VET6 开发板
+图 野火【指南者】STM32F103VET6 开发板
 
 .. image:: media/foreword/forewo005.png
    :align: center
    :alt: 野火【指南者】STM32F103VET6 开发板带液晶效果图
 
-图 1‑4 野火【指南者】STM32F103VET6 开发板带液晶效果图
+图 野火【指南者】STM32F103VET6 开发板带液晶效果图
 
 .. image:: media/foreword/forewo006.png
    :align: center
+   :name: 野火霸道开发板
    :alt: 野火【霸道】STM32F103ZET6 开发板
 
-图 1‑5 野火【霸道】STM32F103ZET6 开发板
+图 野火【霸道】STM32F103ZET6 开发板
 
 .. image:: media/foreword/forewo007.png
    :align: center
    :alt: 野火【霸道】STM32F103ZET6 开发板带液晶显示效果图
 
-图 1‑6 野火【霸道】STM32F103ZET6 开发板带液晶显示效果图
+图 野火【霸道】STM32F103ZET6 开发板带液晶显示效果图
 
 .. image:: media/foreword/forewo008.png
    :align: center
+   :name: 野火霸天虎开发板
    :alt: 野火【霸天虎】STM32F407ZGT6 开发板
 
-图 1‑7 野火【霸天虎】STM32F407ZGT6 开发板
+图 野火【霸天虎】STM32F407ZGT6 开发板
 
 .. image:: media/foreword/forewo009.png
    :align: center
@@ -125,15 +132,16 @@ MINI        Cortex-M3  64    48KB   256KB
 
 .. image:: media/foreword/forewo010.png
    :align: center
+   :name: 野火挑战者开发板
    :alt: 野火【挑战者】F429/F767/H743开发板
 
-图 1‑9 野火【挑战者】F429/F767/H743开发板
+图 野火【挑战者】F429/F767/H743开发板
 
 .. image:: media/foreword/forewo011.png
    :align: center
    :alt: 野火【挑战者】F429/F767/H74开发板 带液晶效果图
 
-图 1‑10 野火【挑战者】F429/F767/H74开发板 带液晶效果图
+图 野火【挑战者】F429/F767/H74开发板 带液晶效果图
 
 本书的技术论坛
 ~~~~~~~~~~~~~~~~~~
