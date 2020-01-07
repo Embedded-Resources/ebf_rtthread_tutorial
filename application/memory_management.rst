@@ -1156,7 +1156,7 @@ RT-Threadd对内存的控制很严格，哪个线程哪个模块用了哪些内�
 初始化，在rt_hw_board_init函数中（board.c文件）已经进行初始化了，当然我们也能从新将内存初始化
 一次。具体见 代码清单:内存管理-14_ 高亮部分。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:内存管理-14系统堆内存初始化rt_system_heap_init()实例
     :emphasize-lines: 14
     :name: 代码清单:内存管理-14

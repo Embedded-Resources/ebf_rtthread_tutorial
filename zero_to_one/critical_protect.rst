@@ -17,7 +17,7 @@ Cortex-M内核快速关中断指令
 
 为了快速地开关中断， Cortex-M内核 专门设置了一条 CPS 指令，有 4 种用法，具体见 代码清单:临界段的保护-1_。
 
-.. code-block::
+.. literalinclude::
     :caption:  代码清单:临界段的保护-1 CPS指令用法
     :name: 代码清单:临界段的保护-1
     :linenos:
@@ -52,7 +52,7 @@ Cortex-M内核快速关中断指令
 
 RT-Thread关中断的函数在contex_rvds.s中定义，在rthw.h中声明，具体实现见 代码清单:临界段的保护-2_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:临界段的保护-2 关中断
     :name: 代码清单:临界段的保护-2
     :linenos:
@@ -90,7 +90,7 @@ RT-Thread关中断的函数在contex_rvds.s中定义，在rthw.h中声明，具�
 
 RT-Thread开中断的函数在contex_rvds.s中定义，在rthw.h中声明，具体实现见 代码清单:临界段的保护-3_。
 
-.. code-block::
+.. literalinclude::
     :caption:  代码清单:临界段的保护-3 开中断
     :name: 代码清单:临界段的保护-3
     :linenos:
@@ -125,7 +125,7 @@ RT-Thread开中断的函数在contex_rvds.s中定义，在rthw.h中声明，具�
 在进入临界段之前，我们会先把中断关闭，退出临界段时再把中断打开。而且Cortex-M内核设置了快速关中断
 的CPS指令，那么按照我们的第一思维，开关中断的函数的实现和临界段代码的保护应该是像 代码清单:临界段的保护-4_ 那样的。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:临界段的保护-4 开关中断的函数的实现和临界段代码的保护
     :name: 代码清单:临界段的保护-4
     :linenos:
@@ -180,7 +180,7 @@ RT-Thread开中断的函数在contex_rvds.s中定义，在rthw.h中声明，具�
 乍一看，代码清单:临界段的保护-4_ 的这种实现开关中断的方法确实有效，没有什么错误，但是我们忽略了一种情况，就是当临
 界段是出现嵌套的时候，这种开关中断的方法就不行了，具体怎么不行具体见 代码清单:临界段的保护-5_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:临界段的保护-5 开关中断的函数的实现和嵌套临界段代码的保护（有错误，只为讲解）
     :name: 代码清单:临界段的保护-5
     :linenos:
@@ -228,7 +228,7 @@ RT-Thread开中断的函数在contex_rvds.s中定义，在rthw.h中声明，具�
     虽然临界段2已经结束，但是临界段1还没有结束，中断是不能开启的，如果此时有外部中断来临，那么临界段1就
     会被中断，违背了我们的初衷，那应该怎么办？正确的做法具体见。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:临界段的保护-6 开关中断的函数的实现和嵌套临界段代码的保护（正确）
     :name: 代码清单:临界段的保护-6
     :linenos:
@@ -295,7 +295,7 @@ RT-Thread开中断的函数在contex_rvds.s中定义，在rthw.h中声明，具�
     因为此时临界段2是嵌套在临界段1中的，还是没有完全离开临界段的范畴，所以不能把中断打开，如果临界段是
     没有嵌套的，使用当前的开关中断的方法的话，那么PRIMASK确实是等于1，具体举例见 代码清单:临界段的保护-7_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:临界段的保护-7 开关中断的函数的实现和一重临界段代码的保护（正确）
     :name: 代码清单:临界段的保护-7
     :linenos:

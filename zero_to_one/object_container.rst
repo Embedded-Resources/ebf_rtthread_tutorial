@@ -426,7 +426,7 @@
 
 -   代码清单:对象容器-9_ **(6)** ：拷贝名字。rt_strncpy()是字符串拷贝函数，
     在kservice.c（kservice.c第一次使用需要在rtthread\3.0.3\src下新建，然后添加到工程rtt/source组中）
-    中定义，在rtthread.h声明，具体代码实现见代码清单8-10。
+    中定义，在rtthread.h声明，具体代码实现见 代码清单:对象容器-10_。
 
 .. code-block:: c
     :caption: 代码清单:对象容器-10 rt_strncpy()函数定义

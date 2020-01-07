@@ -160,7 +160,7 @@ RT-Thread的启动流程
 代码清单:启动流程-3_。复位函数的最后会调用C库函数__main，具体见 代码清单:启动流程-3_ 的高亮部分。__main函数的主要工
 作是初始化系统的堆和栈，最后调用C中的main函数，从而去到C的世界。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-3 Reset_Handler函数
     :emphasize-lines: 15
     :name: 代码清单:启动流程-3
@@ -193,7 +193,7 @@ RT-Thread的启动流程
 是main的时候，只需要将main换成你要扩展的函数名即可，即$Sub$$function和$Super$$function，具体如
 何使用这两个扩展符号的伪代码见 代码清单:启动流程-4_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-4 $Sub$$和$Super$$的使用方法
     :name: 代码清单:启动流程-4
     :linenos:
@@ -220,7 +220,7 @@ $Sub$$main函数
 知道了$Sub$$和$Super$$的用法之后，我们回到RT-Thread component.c文件中的的$Sub$$main，具体实
 现见 代码清单:启动流程-5_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-5 main的扩展函数$Sub$$main
     :name: 代码清单:启动流程-5
     :linenos:
@@ -235,7 +235,7 @@ $Sub$$main函数
 -   代码清单:启动流程-5_ **(1)**\ ：关闭中断，除了硬FAULT和NMI可以响应外，其它统统关掉。该函数是
 在接口文件contex_rvds.S中由汇编实现的，具体见 代码清单:启动流程-6_。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-6 硬件中断失能和使能函数定义
     :name: 代码清单:启动流程-6
     :linenos:
@@ -262,7 +262,7 @@ $Sub$$main函数
 在Cortex-M内核中，为了快速地开关中断， 专门设置了一条 CPS 指令，有 4 种用法，具体见 代码清单:启动流程-7_。
 很显然，RT-Thread里面快速关中断的方法就是用了Cortex-M中的CPS指令。
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-7 Cortex-M 内核中快速关中断指令CPS的用法
     :name: 代码清单:启动流程-7
     :linenos:
@@ -367,7 +367,7 @@ rtthread_startup()函数
 rt_application_init()函数
 ---------------------------------
 
-.. code-block::
+.. literalinclude::
     :caption: 代码清单:启动流程-10 创建初始线程
     :name: 代码清单:启动流程-10
     :linenos:
