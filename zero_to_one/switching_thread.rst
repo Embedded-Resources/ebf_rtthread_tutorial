@@ -1000,7 +1000,7 @@ rt_hw_context_switch_to() 函数
 
 
 
-.. code-block:: c
+.. literalinclude::
     :caption: 代码清单:线程的定义-rt_hw_context_switch_to() 函数
     :name: 代码清单:线程的定义-26
     :linenos:
@@ -1166,7 +1166,7 @@ PendSV_Handler()函数
 
 PendSV_Handler()函数是真正实现线程上下文切换的地方，具体实现见 代码清单:线程的定义-28_。
 
-.. code-block:: c
+.. literalinclude::
     :caption: 代码清单:线程的定义-28 PendSV_Handler()函数
     :name: 代码清单:线程的定义-28
     :linenos:
@@ -1368,7 +1368,7 @@ rt_hw_contex_switch()函数
     器r0、r1。rt_hw_context_switch()具体实现见 代码清单:线程的定义-30_。
 
 
-.. code-block:: c
+.. literalinclude::
     :caption: 代码清单:线程的定义-rt_hw_context_switch()函数
     :name: 代码清单:线程的定义-30
     :linenos:
