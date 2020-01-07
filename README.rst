@@ -5,7 +5,7 @@
 
 本项目通过git开源：
 
-- github仓库地址：https://github.com/Embdefire/ebf_rtthread_tutorial.git
+- github仓库地址：https://github.com/Embedfire/ebf_rtthread_tutorial.git
 - gitee 仓库地址：https://gitee.com/wildfireteam/ebf_rtthread_tutorial
 
 点击右侧链接可在线阅读本项目文档：《 `RT-Thread 内核实现与应用开发实战—基于STM32 <https://ebf-rtthread-tutorial.readthedocs.io>`_ 》

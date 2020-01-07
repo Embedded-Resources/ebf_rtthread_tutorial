@@ -9,10 +9,11 @@ rt_kprintf()。
 rt_kprintf()函数定义
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-rt_kprintf()函数在kservice.c中实现，是属于内核服务类的函数，具体实现见代码清单 15‑1。
+rt_kprintf()函数在kservice.c中实现，是属于内核服务类的函数，具体实现见 代码清单:rt_kprintf-1_。
 
 .. code-block:: c
-    :caption: 代码清单 15‑1 rt_kprintf()函数定义
+    :caption: 代码清单:rt_kprintf-1 rt_kprintf()函数定义
+    :name: 代码清单:rt_kprintf-1
     :linenos:
 
     /*
@@ -57,18 +58,18 @@ rt_kprintf()函数在kservice.c中实现，是属于内核服务类的函数，�
     }
 
 
-代码清单 15‑1\ **(1)**\ ：先定义一个字符缓冲区，大小由rt_config.h中的宏RT_CONSOLEBUF_SIZE定义，默认为128。
+-   代码清单:rt_kprintf-1_ **(1)**\ ：先定义一个字符缓冲区，大小由rt_config.h中的宏RT_CONSOLEBUF_SIZE定义，默认为128。
 
-代码清单 15‑1\ **(2)**\ ：调用rt_vsnprintf函数，将要输出的字符按照fmt指定的
-格式打印到预先定义好的rt_log_buf缓冲区，然后我们将缓冲区的内容输出到控制台就
-行了，接下来就是选择使用什么控制台。
+-   代码清单:rt_kprintf-1_ **(2)**\ ：调用rt_vsnprintf函数，将要输出的字符按照fmt指定的
+    格式打印到预先定义好的rt_log_buf缓冲区，然后我们将缓冲区的内容输出到控制台就
+    行了，接下来就是选择使用什么控制台。
 
-代码清单 15‑1\ **(3)**\ ：如果使用设备驱动，则通过设备驱动函数将rt_log_buf
-缓冲区的内容输出到控制台。如果设备控制台打开失败则由rt_hw_console_output函数
-处理，这个函数需要用户单独实现。
+-   代码清单:rt_kprintf-1_ **(3)**\ ：如果使用设备驱动，则通过设备驱动函数将rt_log_buf
+    缓冲区的内容输出到控制台。如果设备控制台打开失败则由rt_hw_console_output函数
+    处理，这个函数需要用户单独实现。
 
-代码清单 15‑1\ **(4)**\ ：不使用设备驱动，rt_log_buf缓冲区的内容则
-由rt_hw_console_output()函数处理，这个函数需要用户单独实现。
+-   代码清单:rt_kprintf-1_ **(4)**\ ：不使用设备驱动，rt_log_buf缓冲区的内容则
+    由rt_hw_console_output()函数处理，这个函数需要用户单独实现。
 
 自定义rt_hw_console_output函数
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -78,10 +79,11 @@ rt_hw_console_output函数处理，这个函数需要用户单独实现。其实
 这个函数也很简单，只需要通过一个控制台将rt_log_buf缓冲区的内容发送出
 去即可，这个控制台可以是USB、串口、CAN等，使用的最多的控制台则是串口。
 这里我们只讲解如何将串口控制台重映射到rt_kprintf函数，rt_hw_console_output函数
-在board.c实现，具体见代码清单 15‑2。
+在board.c实现，具体见 代码清单:rt_kprintf-2_。
 
 .. code-block:: c
-    :caption: 代码清单 15‑2 重映射串口控制台到rt_kprintf函数
+    :caption: 代码清单:rt_kprintf-2 重映射串口控制台到rt_kprintf函数
+    :name: 代码清单:rt_kprintf-2
     :linenos:
 
     /**
@@ -116,11 +118,12 @@ rt_hw_console_output函数处理，这个函数需要用户单独实现。其实
         rt_exit_critical();
     }
 
-如果我们使用的是HAL库，rt_hw_console_output函数就需要做不一样的修改，使用HAL库的串口发送函数接口，具体见代码清单 15‑3高亮部分。
+如果我们使用的是HAL库，rt_hw_console_output函数就需要做不一样的修改，使用HAL库的串口发送函数接口，具体见 代码清单:rt_kprintf-3_ 高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 15‑3重映射串口控制台到rt_kprintf函数
+    :caption: 代码清单:rt_kprintf-3重映射串口控制台到rt_kprintf函数
     :emphasize-lines: 21,23
+    :name: 代码清单:rt_kprintf-3
     :linenos:
 
     /**
@@ -159,11 +162,12 @@ rt_hw_console_output函数处理，这个函数需要用户单独实现。其实
 ---------------
 
 rt_kprintf函数输出的控制台使用的是开发板上的串口（野火STM32全系列的开发板都板载了USB转串口，然后通过跳帽默认接到了STM32的串口1），所以需要先要将裸机的串口驱动添加到工程并在开发环境中指定串口驱动头文件的编译路径，然后在board.c的rt_hw_board_init()函数中
-对串口初始化，具体见代码清单 15‑4的高亮部分。
+对串口初始化，具体见 代码清单:rt_kprintf-4_ 的高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 15‑4 在rt_hw_board_init中添加串口初始化代码
+    :caption: 代码清单:rt_kprintf-4 在rt_hw_board_init中添加串口初始化代码
     :emphasize-lines: 11-12
+    :name: 代码清单:rt_kprintf-4
     :linenos:
 
     void rt_hw_board_init()
@@ -198,10 +202,11 @@ rt_kprintf函数输出的控制台使用的是开发板上的串口（野火STM3
 
 当rt_kprintf函数对应的输出控制台初始化好之后（在rt_hw_board_init()完成），
 系统接下来会调用函数rt_show_version()来打印RT-Thread的版本号，该函数在
-kservice.c中实现，具体见代码清单 15‑5。
+kservice.c中实现，具体见 代码清单:rt_kprintf-5_。
 
 .. code-block:: c
-    :caption: 代码清单 15‑5 rt_show_version函数实现
+    :caption: 代码清单:rt_kprintf-5 rt_show_version函数实现
+    :name: 代码清单:rt_kprintf-5
     :linenos:
 
     void rt_show_version(void)
@@ -213,11 +218,12 @@ kservice.c中实现，具体见代码清单 15‑5。
         rt_kprintf(" 2006 - 2018 Copyright by rt-thread team\n");
     }
 
-我们也可以在线程中用rt_kprintf打印一些辅助信息，具体见代码清单 15‑6的高亮部分。
+我们也可以在线程中用rt_kprintf打印一些辅助信息，具体见 代码清单:rt_kprintf-6_ 的高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 15‑6 使用rt_kprintf在线程中打印调试信息
+    :caption: 代码清单:rt_kprintf-6 使用rt_kprintf在线程中打印调试信息
     :emphasize-lines: 7,11
+    :name: 代码清单:rt_kprintf-6
     :linenos:
 
     static void led1_thread_entry(void* parameter)
@@ -238,11 +244,12 @@ kservice.c中实现，具体见代码清单 15‑5。
 下载验证
 --------------
 
-将程序编译好，用USB线连接电脑和开发板的USB接口（对应丝印为USB转串口），用DAP仿真器把程序下载到野火STM32开发板（具体型号根据你买的板子而定，每个型号的板子都配套有对应的程序），在电脑上打开串口调试助手，然后复位开发板就可以在调试助手中看到rt_kprintf的打印信息，具体见图
-15‑1。
+将程序编译好，用USB线连接电脑和开发板的USB接口（对应丝印为USB转串口），用DAP仿真器把程序下载到野火STM32开
+发板（具体型号根据你买的板子而定，每个型号的板子都配套有对应的程序），在电脑上打开串口调试助手，然后复位开
+发板就可以在调试助手中看到rt_kprintf的打印信息，具体见图 rt_kprintf打印信息实验现象_。
 
 .. image:: media/remaping_rt_kprintf/remapi002.png
     :align: center
-    :alt: 图 15‑1rt_kprintf打印信息实验现象
+    :name: rt_kprintf打印信息实验现象
+    :alt: rt_kprintf打印信息实验现象
 
-图 15‑1rt_kprintf打印信息实验现象

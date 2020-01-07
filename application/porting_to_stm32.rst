@@ -12,13 +12,13 @@ Thread相关的例程我们都在此模板上修改和添加代码，不用再�
 
 STM32的裸机工程模板我们直接使用野火STM32开发板配套的固件库例程即可。这里我们选取比较简单的例
 程—“GPIO输出—使用固件库点亮LED”作为裸机工程模板。该裸机工程模板均可以在对应板子的A盘/程序源码
-/固件库例程的目录下获取到，下面以野火F103-霸道板子的光盘目录为例，具体见图 13‑1。
+/固件库例程的目录下获取到，下面以野火F103-霸道板子的光盘目录为例，具体见图 STM32裸机工程模板在光盘资料中的位置_。
 
 .. image:: media/porting_to_stm32/portin002.png
     :align: center
-    :alt: 图 13‑1 STM32裸机工程模板在光盘资料中的位置
+    :name: STM32裸机工程模板在光盘资料中的位置
+    :alt: STM32裸机工程模板在光盘资料中的位置
 
-图 13‑1 STM32裸机工程模板在光盘资料中的位置
 
 下载RT-Thread Nano 源码
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,33 +26,34 @@ STM32的裸机工程模板我们直接使用野火STM32开发板配套的固件�
 Nano是Master的精简版，去掉了一些组件和各种开发板的BSP，保留了OS的核心功能，但足够我们使用。版本已经更新到了3.0.3版本，与Master的版本号一致。
 
 RT-Thread Master的源码可从RT-Thread GitHub仓库地址：\ https://github.com/RT-Thread/rt-thread\ 下载到，Nano就是从里面扣出来的。RT-
-Thread官方并没有将抠出来的Nano放到他们的官方网站，而是作为一个Package放在了KEIL网站—\ http://www.keil.com/dd2/pack/\ 中，供用户下载，具体见图 13‑2，目前的版本号是3.0.3，如果以后更新到更高的版本则以最新的版本为准。
+Thread官方并没有将抠出来的Nano放到他们的官方网站，而是作为一个Package放在了KEIL网站—\ http://www.keil.com/dd2/pack/\ 中，供用户下载，
+具体见图 RT-Thread_ Nano Package，目前的版本号是3.0.3，如果以后更新到更高的版本则以最新的版本为准。
 
 .. image:: media/porting_to_stm32/portin003.png
     :align: center
-    :alt: 图 13‑2 RT-Thread Nano Package
+    :name: RT-Thread
+    :alt: RT-Thread Nano Package
 
-图 13‑2 RT-Thread Nano Package
 
 安装RT-Thread Package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 下载下来之后是一个以exe为后缀的文件，点击安装即可，安装目录与你的KEIL安装目录一样，安装成功之后，
-可以在KEIL的PACK目录下找到刚刚安装的Package的所有的文件，具体见图 13‑3。
+可以在KEIL的PACK目录下找到刚刚安装的Package的所有的文件，具体见图 安装文件_。
 
 .. image:: media/porting_to_stm32/portin004.png
     :align: center
-    :alt: 图 13‑3 RT-Thread Nano Package 安装文件
+    :name: 安装文件
+    :alt:  RT-Thread Nano Package 安装文件
 
-图 13‑3 RT-Thread Nano Package 安装文件
 
-这样安装成功之后，就可以在KEIL里面的软件包管理器中将RT-Thread Nano 直接添加到工程里面，具体见图 13‑4。
+这样安装成功之后，就可以在KEIL里面的软件包管理器中将RT-Thread Nano 直接添加到工程里面，具体见图 从KEIL的软件包管理器中选择RT-Thread_。
 
 .. image:: media/porting_to_stm32/portin005.png
     :align: center
-    :alt: 图 13‑4从KEIL的软件包管理器中选择RT-Thread Nano Package
+    :name: 从KEIL的软件包管理器中选择RT-Thread
+    :alt: 从KEIL的软件包管理器中选择RT-Thread Nano Package
 
-图 13‑4从KEIL的软件包管理器中选择RT-Thread Nano Package
 
 往裸机工程添加RT-Thread源码
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,15 +64,15 @@ Thread官方并没有将抠出来的Nano放到他们的官方网站，而是作�
 使用这种方法打包的RT-Thread 工程，拷贝到一台没有安装RT-Thread Package的电脑上面是使用不了的，
 会提示找不到RT-Thread的源文件。鉴于RT-Thread Package容量很小，我们直接将安装在KEIL PACK 目
 录下的整个RT-Thread文件夹拷贝到我们的STM32裸机工程里面，让整个RT-Thread Package 跟随我们的
-工程一起发布，具体见图 13‑5。
+工程一起发布，具体见图 拷贝Package到裸机工程_。
 
 .. image:: media/porting_to_stm32/portin006.png
     :align: center
-    :alt: 图 13‑5 拷贝RT-Thread Package到裸机工程
+    :name: 拷贝Package到裸机工程
+    :alt: 拷贝RT-Thread Package到裸机工程
+    
 
-图 13‑5 拷贝RT-Thread Package到裸机工程
-
-图 13‑5中RT-Thread文件夹下就是RT-Thread Nano 的所有东西，该文件夹下的具体内容见表格 13‑1。
+图 拷贝Package到裸机工程_ 中RT-Thread文件夹下就是RT-Thread Nano 的所有东西，该文件夹下的具体内容见表格 13‑1。
 
 表格 13‑1 RT-dhread 文件夹内容组成
 
@@ -120,15 +121,17 @@ RT-Thread功能的配置头文件，里面定义了很多宏，通过这些宏�
 
 .. image:: media/porting_to_stm32/portin007.png
     :align: center
+    :name: bsp文件夹内容
     :alt: 图 13‑6 RT-Thread Nano bsp 文件夹内容
 
-图 13‑6 RT-Thread Nano bsp 文件夹内容
+RT-Thread Nano bsp 文件夹内容
 
 .. image:: media/porting_to_stm32/portin005.png
     :align: center
+    :name: Master文件夹内容
     :alt: 图 13‑7 RT-Thread Master 文件夹内容（以后会更多）
 
-图 13‑7 RT-Thread Master 文件夹内容（以后会更多）
+RT-Thread Master 文件夹内容（以后会更多）
 
 components文件夹简介
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,8 +148,10 @@ libcpu文件夹简介
 ^^^^^^^^^^^^^^^^^^^^
 
 RT-Thread是一个软件，单片机是一个硬件，RT-
-Thread要想运行在一个单片机上面，它们就必须关联在一起，那么怎么关联？还是得通过写代码来关联，这部分关联的文件叫接口文件，通常由汇编和C联合编写。这些接口文件都是跟硬件密切相关的，不同的硬件接口文件是不一样的，但都大同小异。编写这些接口文件的过程我们就叫移植，移植的过程通常由RT-
-Thread和mcu原厂的人来负责，移植好的这些接口文件就放在libcpu这个文件夹的目录下。RT-Thread nano目
+Thread要想运行在一个单片机上面，它们就必须关联在一起，那么怎么关联？还是得通过写代码来关联，这部分
+关联的文件叫接口文件，通常由汇编和C联合编写。这些接口文件都是跟硬件密切相关的，不同的硬件接口文件是
+不一样的，但都大同小异。编写这些接口文件的过程我们就叫移植，移植的过程通常由RT-Thread和mcu原厂的人
+来负责，移植好的这些接口文件就放在libcpu这个文件夹的目录下。RT-Thread nano目
 前在libcpu目录下只放了cortex-m0、m3、m4和m7内核的单片机的接口文件，只要是使用了这些内核的mcu都可
 以使用里面的接口文件。通常网络上出现的叫“移植某某某RTOS到某某某MCU”的教程，其实准确来说，不能够叫
 移植，应该叫使用官方的移植，因为这些跟硬件相关的接口文件，RTOS官方都已经写好了，我们只是使用而已。
@@ -184,26 +189,24 @@ H743-挑战者         STM32H743IIT6 libcpu/arm/cortex-m7
 =================== ============= ===========================
 
 bsp里面的rtconfig.h和board.c添加到user组文件夹下，其中rtconfig.h用于配置RT-Thread的功能，
-board.c用于存放硬件相关的初始化函数。源码添加完毕之后，具体见图 13‑8。
+board.c用于存放硬件相关的初始化函数。源码添加完毕之后，具体见图 添加RT-Thread源码到工程组文件夹_。
 
 .. image:: media/porting_to_stm32/portin009.png
     :align: center
+    :name: 添加RT-Thread源码到工程组文件夹
     :alt: 图 13‑8 添加RT-Thread源码到工程组文件夹
-
-
 
 指定RT-Thread头文件的路径
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 RT-Thread的源码已经添加到开发环境的组文件夹下面，编译的时候需要为这些源文件指定头文件的路径，不然编译会报错。RT-Thread的源码里面只有RT-Thread\3.0.3\components\finsh、RT-Thread\3.0.3\include和RT-
 Thread\3.0.3\include\libc这三个文件夹下面有头文件，只需要将这三个头文件的路径在开发环境里面指定即可。同时我们还将RT-Thread\3.0.3\bsp里面的rtconfig.h这个头文件拷贝到了工程根目录下的user文件夹下，所以user的路径也要加到开发环境里面。RT-
-Thread头文件的路径添加完成后的效果具体见图 13‑9。
+Thread头文件的路径添加完成后的效果具体见图 在开发环境中指定RT-Thread的头文件的路径_。
 
 .. image:: media/porting_to_stm32/portin010.png
     :align: center
+    :name: 在开发环境中指定RT-Thread的头文件的路径
     :alt: 图 13‑9 在开发环境中指定RT-Thread 的头文件的路径
-
-图 13‑9 在开发环境中指定RT-Thread 的头文件的路径
 
 修改rtconfig.h
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,7 +218,8 @@ rtconfig.h文件内容讲解
 -------------------------
 
 .. code-block:: c
-    :caption: 代码清单 13‑1 rtconfig.h文件内容
+    :caption: 代码清单:移植RTT-1 rtconfig.h文件内容
+    :name: 代码清单:移植RTT-1
     :linenos:
 
     /* RT-Thread config file */
@@ -386,85 +390,84 @@ rtconfig.h文件内容讲解
 
     #endif
 
-代码清单 13‑1\ **(1)** ：头文件RTE_Components.h是在MDK中添加RT-Thead Package时由MDK自动生成的，
-目前我们没有使用MDK中自带的RT-Thread的Package，所以这个头文件不存在，如果包含了该头文件，编译的时
-候会报错，等下修改rtconfig.h的时候需要注释掉该头文件。
+-   代码清单:移植RTT-1_ **(1)** ：头文件RTE_Components.h是在MDK中添加RT-Thead Package时由MDK自动生成的，
+    目前我们没有使用MDK中自带的RT-Thread的Package，所以这个头文件不存在，如果包含了该头文件，编译的时
+    候会报错，等下修改rtconfig.h的时候需要注释掉该头文件。
 
-代码清单 13‑1\ **(2)** ：\ **Use Configuration Wizard in Context Menu：**\ 在上下文中使用
-配置向导来配置rtconfig.h中的宏定义。接下来代码中夹杂的“<h> </h>”、“<o>”“<i>”、“<c1> </c>”和“<e>
-</e>”这些符号是MDK自带的配置向导控制符号，使用这些符号控制的代码可以生成一个对应的图形界面的配置
-向导，rtconfig.h对应的配置向导具体见图 13‑10。有关配置向导的语法，可在MDK的帮助文档里面找到，
-在搜索栏输入Configuration Wizard 即可搜索到，具体见图
-13‑11。具体每一个符号的语法我们这里不做细讲，有兴趣的可以深究下。 对于我个人，还是倾向于直接修
-改rtconfig.h中的源码，而不是通过这个配置向导来修改，就好比一个老烟枪抽烟的时候你要给他加个过滤
-嘴，那是不可能的，这辈子都是不可能的。
+-   代码清单:移植RTT-1_ **(2)** ： **Use Configuration Wizard in Context Menu：** 在上下文中使用
+    配置向导来配置rtconfig.h中的宏定义。接下来代码中夹杂的“<h> <h>”、“<o>”“<i>”、“<c1> <c>”和“<e>
+    <e>”这些符号是MDK自带的配置向导控制符号，使用这些符号控制的代码可以生成一个对应的图形界面的配置
+    向导，rtconfig.h对应的配置向导具体见图 rtconfig.h对应的配置向导_。有关配置向导的语法，可在MDK的帮助文档里面找到，
+    在搜索栏输入Configuration Wizard 即可搜索到，具体见图 Configuration-Wizard_。具体每一个符号的语法我们这里不
+    做细讲，有兴趣的可以深究下。 对于我个人，还是倾向于直接修改rtconfig.h中的源码，而不是通过这个配置
+    向导来修改，就好比一个老烟枪抽烟的时候你要给他加个过滤嘴，那是不可能的，这辈子都是不可能的。
 
 .. image:: media/porting_to_stm32/portin011.png
     :align: center
+    :name: rtconfig.h对应的配置向导
     :alt: 图 13‑10 rtconfig.h对应的配置向导
-
-图 13‑10 rtconfig.h对应的配置向导
 
 .. image:: media/porting_to_stm32/portin012.png
     :align: center
+    :name: Configuration-Wizard
     :alt: 图 13‑11 Configuration Wizard
 
-图 13‑11 Configuration Wizard
 
-代码清单 13‑1\ **(3)** ：RT-Thread的基本配置，要想RT-Thread准确无误的跑起来，这些基本配置必须得有且正确。
+-   代码清单:移植RTT-1_ **(3)** ：RT-Thread的基本配置，要想RT-Thread准确无误的跑起来，这些基本配置必须得有且正确。
 
-代码清单 13‑1\ **(3)-1** ：RT_THREAD_PRIORITY_MAX这个宏表示RT-Thread支持多少个优先级，
-取值范围为8~~~256，默认为32。
+-   代码清单:移植RTT-1_ **(3)-1** ：RT_THREAD_PRIORITY_MAX这个宏表示RT-Thread支持多少个优先级，
+    取值范围为8~~~256，默认为32。
 
-代码清单 13‑1\ **(3)-2**\ ：RT_TICK_PER_SECOND 表示操作系统每秒钟有多少个tick，tick即是操
-作系统的时钟周期，默认为1000，即操作系统的时钟周期tick等于1ms。
+-   代码清单:移植RTT-1_ **(3)-2**\ ：RT_TICK_PER_SECOND 表示操作系统每秒钟有多少个tick，tick即是操
+    作系统的时钟周期，默认为1000，即操作系统的时钟周期tick等于1ms。
 
-代码清单 13‑1\ **(3)-3**\ ：RT_ALIGN_SIZE这个宏表示CPU处理的数据需要多少个字节对齐，默认为4个字节。
+-   代码清单:移植RTT-1_ **(3)-3**\ ：RT_ALIGN_SIZE这个宏表示CPU处理的数据需要多少个字节对齐，默认为4个字节。
 
-代码清单 13‑1\ **(3)-4**\ ：RT_NAME_MAX这个宏表示内核对象名字的最大长度，取值范围为2~~~16，默认为8。
+-   代码清单:移植RTT-1_ **(3)-4**\ ：RT_NAME_MAX这个宏表示内核对象名字的最大长度，取值范围为2~~~16，默认为8。
 
-代码清单 13‑1\ **(3)-5**\ ：使用RT-Thread组件初始化，默认使能。
+-   代码清单:移植RTT-1_ **(3)-5**\ ：使用RT-Thread组件初始化，默认使能。
 
-代码清单 13‑1\ **(3)-6**\ ：使用用户main函数，默认打开。
+-   代码清单:移植RTT-1_ **(3)-6**\ ：使用用户main函数，默认打开。
 
-代码清单 13‑1\ **(3)-7**\ ：main线程栈大小，取值范围为1~~~4086，单位为字节，默认为512。
+-   代码清单:移植RTT-1_ **(3)-7**\ ：main线程栈大小，取值范围为1~~~4086，单位为字节，默认为512。
 
-代码清单 13‑1\ **(4)**\ ：调试配置。包括了内核调试配置，组件调试配置和线程栈溢出检测，目前全部关闭。
+-   代码清单:移植RTT-1_ **(4)**\ ：调试配置。包括了内核调试配置，组件调试配置和线程栈溢出检测，目前全部关闭。
 
-代码清单 13‑1\ **(5)**\ ：钩子函数配置，目前全部关闭。
+-   代码清单:移植RTT-1_ **(5)**\ ：钩子函数配置，目前全部关闭。
 
-代码清单 13‑1\ **(6)**\ ：软件定时器配置，目前关闭，不使用软件定时器。
+-   代码清单:移植RTT-1_ **(6)**\ ：软件定时器配置，目前关闭，不使用软件定时器。
 
-代码清单 13‑1\ **(7)**\ ：内部通信配置，包括信号量、互斥量、事件、邮箱和消息队列，根据需要配置。
+-   代码清单:移植RTT-1_ **(7)**\ ：内部通信配置，包括信号量、互斥量、事件、邮箱和消息队列，根据需要配置。
 
-代码清单 13‑1\ **(8)**\ ：内存管理配置。
+-   代码清单:移植RTT-1_ **(8)**\ ：内存管理配置。
 
-代码清单 13‑1\ **(8)-1**\ ：RT_USING_MEMPOOL这个宏用于表示是否使用内存池，目前关闭，不使用内存池。
+-   代码清单:移植RTT-1_ **(8)-1**\ ：RT_USING_MEMPOOL这个宏用于表示是否使用内存池，目前关闭，不使用内存池。
 
-代码清单 13‑1\ **(8)-2**\ ：RT_USING_HEAP这个宏用于表示是否堆，目前关闭，不使用堆。
+-   代码清单:移植RTT-1_ **(8)-2**\ ：RT_USING_HEAP这个宏用于表示是否堆，目前关闭，不使用堆。
 
-代码清单 13‑1\ **(8)-3**\ ：RT_USING_SMALL_MEM这个宏用于表示是否使用小内存，目前使能。
+-   代码清单:移植RTT-1_ **(8)-3**\ ：RT_USING_SMALL_MEM这个宏用于表示是否使用小内存，目前使能。
 
-代码清单 13‑1\ **(8)-4**\ ：RT_USING_TINY_SIZE这个宏用于表示是否使用极小内存，目前关闭，不使用。
+-   代码清单:移植RTT-1_ **(8)-4**\ ：RT_USING_TINY_SIZE这个宏用于表示是否使用极小内存，目前关闭，不使用。
 
-代码清单 13‑1\ **(9)**\ ：控制台配置。控制台即是rt_kprintf()函数调试输出的设备，通常使用串口。
+-   代码清单:移植RTT-1_ **(9)**\ ：控制台配置。控制台即是rt_kprintf()函数调试输出的设备，通常使用串口。
 
-代码清单 13‑1\ **(10)**\ ：FINSH配置。
+-   代码清单:移植RTT-1_ **(10)**\ ：FINSH配置。
 
-代码清单 13‑1\ **(11)**\ ：设备配置。
+-   代码清单:移植RTT-1_ **(11)**\ ：设备配置。
 
-代码清单 13‑1\ **(12)**\ ：rtconfig.h配置结束。
+-   代码清单:移植RTT-1_ **(12)**\ ：rtconfig.h配置结束。
 
 rtconfig.h文件修改
 -----------------------
 
 rtconfig.h头文件的内容修改的不多，具体是：注释掉头文件RTE_Components.h、修改了
 RT_THREAD_PRIORITY_MAX、RT_TICK_PER_SECOND和RT_MAIN_THREAD_STACK_SIZE这三个宏
-的大小，具体见代码清单 13‑2的高亮部分。
+的大小，具体见 代码清单:移植RTT-2_ 的高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 13‑2 rtconfig.h文件修改
+    :caption: 代码清单:移植RTT-2 rtconfig.h文件修改
     :emphasize-lines: 6,12,15,32
+    :name: 代码清单:移植RTT-2
     :linenos:
 
     /* RT-Thread config file */
@@ -641,10 +644,11 @@ board.c文件内容讲解
 -----------------------
 
 board.c是直接从RT-Thread/3.0.3/bsp文件夹下面拷贝过来的，里面存放的是与硬件相关的初始化函数，
-整个 board.c中的内容具体见代码清单 13‑3。
+整个 board.c中的内容具体见 代码清单:移植RTT-3_。
 
 .. code-block:: c
-    :caption: 代码清单 13‑3 board.c文件内容
+    :caption: 代码清单:移植RTT-3 board.c文件内容
+    :name: 代码清单:移植RTT-3
     :linenos:
 
     /* RT-Thread相关头文件 */ (1)
@@ -751,17 +755,17 @@ board.c是直接从RT-Thread/3.0.3/bsp文件夹下面拷贝过来的，里面存
     }
 
 
-代码清单 13‑3\ **(1)**\ ：RT-Thread相关头文件，rthw.h是处理器相关，rtthread与内核相关。
+-   代码清单:移植RTT-3_ **(1)**\ ：RT-Thread相关头文件，rthw.h是处理器相关，rtthread与内核相关。
 
-代码清单 13‑3\ **(2)**\ ：SysTick相关的寄存器定义和初始化函数，这个是跟处理器相关的，等下我们直接
-使用固件库函数，可以把这部分注释掉，也可以保留，看个人喜好。
+-   代码清单:移植RTT-3_ **(2)**\ ：SysTick相关的寄存器定义和初始化函数，这个是跟处理器相关的，等下我们直接
+    使用固件库函数，可以把这部分注释掉，也可以保留，看个人喜好。
 
-代码清单 13‑3\ **(3)**\ ：RT-Thread堆配置，如果同时定义了RT_USING_USER_MAIN和 RT_USING_HEAP这两
-个宏，表示RT-Thread里面创建内核对象时使用动态内存分配方案。堆可以是内部的SRAM也可以是外部的SRAM或
-SDRAM，目前的方法是从内部SRAM里面分配一部分静态内存来作为堆空间，这里配置为4KB。rt_heap_begin_get()
-和rt_heap_end_get()这两个函数表示堆的起始地址和结束地址。这两个函数前面的宏RT_WEAK的原型是关键字
-__weak，表示若定义，即其它地方定义了rt_heap_begin_get()和rt_heap_end_get()这两个函数实体，
-被__weak修饰的函数就会被覆盖。
+-   代码清单:移植RTT-3_ **(3)**\ ：RT-Thread堆配置，如果同时定义了RT_USING_USER_MAIN和 RT_USING_HEAP这两
+    个宏，表示RT-Thread里面创建内核对象时使用动态内存分配方案。堆可以是内部的SRAM也可以是外部的SRAM或
+    SDRAM，目前的方法是从内部SRAM里面分配一部分静态内存来作为堆空间，这里配置为4KB。rt_heap_begin_get()
+    和rt_heap_end_get()这两个函数表示堆的起始地址和结束地址。这两个函数前面的宏RT_WEAK的原型是关键字
+    __weak，表示若定义，即其它地方定义了rt_heap_begin_get()和rt_heap_end_get()这两个函数实体，
+    被__weak修饰的函数就会被覆盖。
 
 RT_USING_USER_MAIN和RT_USING_HEAP这两个宏在rtconfig.h中定义，RT_USING_USER_MAIN默认使能，通过使能或者失能RT_USING_HEAP这个宏来选择使用静态或者动态内存。无论是使用静态还是动态内存方案，使用的都是内部的SRAM，区别是使用的内存是
 在程序编译的时候分配还是在运行的时候分配。
@@ -769,38 +773,39 @@ RT_USING_USER_MAIN和RT_USING_HEAP这两个宏在rtconfig.h中定义，RT_USING_
 rt_hw_board_init()函数
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-代码清单 13‑3\ **(4)**\ ：RT-Thread启动的时候会调用一个名为rt_hw_board_init()的函数，从函数名称
-我们可以知道它是用来初始化开发板硬件的，比如时钟，比如串口等，具体初始化什么由用户选择。当这些硬件
-初始化好之后，RT-Thread才继续往下启动。至于RT-Thread是哪个文件里面的哪个函数会调
-用rt_hw_board_init()，我们在本章先不细讲，留到接下来的“RT-Thread的启动流程”章节再深究，这里我们
-只需要知道我们用户要自己编写一个rt_hw_board_init()的函数供RT-Thread启动的时候调用即可。
+-   代码清单:移植RTT-3_ **(4)**\ ：RT-Thread启动的时候会调用一个名为rt_hw_board_init()的函数，从函数名称
+    我们可以知道它是用来初始化开发板硬件的，比如时钟，比如串口等，具体初始化什么由用户选择。当这些硬件
+    初始化好之后，RT-Thread才继续往下启动。至于RT-Thread是哪个文件里面的哪个函数会调
+    用rt_hw_board_init()，我们在本章先不细讲，留到接下来的“RT-Thread的启动流程”章节再深究，这里我们
+    只需要知道我们用户要自己编写一个rt_hw_board_init()的函数供RT-Thread启动的时候调用即可。
 
-代码清单 13‑3\ **(4)-1**\ ：更新系统时钟，如果硬件已经能够跑起来都表示系统时钟是没有问题的，该函数一般由固件库提供。
+-   代码清单:移植RTT-3_ **(4)-1**\ ：更新系统时钟，如果硬件已经能够跑起来都表示系统时钟是没有问题的，该函数一般由固件库提供。
 
-代码清单 13‑3\ **(4)-2**\ ：初始化系统定时器SysTick，SysTick给操作系统提供时基，1个时基我们称之
-为一个tick，tick是操作系统最小的时间单位。RT_TICK_PER_SECOND是一个在rtconfig.h中定义的宏，用于
-配置SysTick每秒中断多少次，这里配置为1000，即1秒钟内SysTick会中断1000次，即中断周期为1ms。 这部
-分功能等下我们会用固件库函数SysTick_Config()来代替。
+-   代码清单:移植RTT-3_ **(4)-2**\ ：初始化系统定时器SysTick，SysTick给操作系统提供时基，1个时基我们称之
+    为一个tick，tick是操作系统最小的时间单位。RT_TICK_PER_SECOND是一个在rtconfig.h中定义的宏，用于
+    配置SysTick每秒中断多少次，这里配置为1000，即1秒钟内SysTick会中断1000次，即中断周期为1ms。 这部
+    分功能等下我们会用固件库函数SysTick_Config()来代替。
 
-代码清单 13‑3\ **(4)-3**\ ：硬件BSP初始化统统放在这里，比如LED，串口，LCD等。目前我们暂时没有初始化任何开发板的硬件。
+-   代码清单:移植RTT-3_ **(4)-3**\ ：硬件BSP初始化统统放在这里，比如LED，串口，LCD等。目前我们暂时没有初始化任何开发板的硬件。
 
-代码清单 13‑3\ **(4)-4**\ ：这部分是RT-Thread为开发板组件提供的一个初始化函数，该函数在
-components.c里面实现，由rtconfig.h里面的宏RT_USING_COMPONENTS_INIT决定是否调用，默认是开启。
+-   代码清单:移植RTT-3_ **(4)-4**\ ：这部分是RT-Thread为开发板组件提供的一个初始化函数，该函数在
+    components.c里面实现，由rtconfig.h里面的宏RT_USING_COMPONENTS_INIT决定是否调用，默认是开启。
 
-代码清单 13‑3\ **(4)-5**\ ：rt_console_set_device()是RT-
-Thread提供的一个控制台设置函数，它将指定rt_kprintf()函数的输出内容具体从什么设备打印出来。该函数在kservice.c里面实现，由rtconfig.h里面的RT_USING_CONSOLE和RT_USING_DEVICE这两个宏决定是否调用，目前我们暂时不用。
+-   代码清单:移植RTT-3_ **(4)-5**\ ：rt_console_set_device()是RT-Thread提供的一个控制台设置函数，它将指定rt_kprintf()函数
+    的输出内容具体从什么设备打印出来。该函数在kservice.c里面实现，由rtconfig.h里面的RT_USING_CONSOLE和RT_USING_DEVICE这两个宏决定是否调用，目前我们暂时不用。
 
-代码清单 13‑3\ **(4)-6**\ ：rt_system_heap_init()是RT-Thread提供的一个内存初始化函数，只有在使用RT-
-Thread提供的动态内存分配函数时才需要使用到。该函数在mem.c里面实现，由rtconfig.h里面的RT_USING_HEAP和RT_USING_USER_MAIN这两个决定是否调用，目前我们暂时不用。
+-   代码清单:移植RTT-3_ **(4)-6**\ ：rt_system_heap_init()是RT-Thread提供的一个内存初始化函数，只有在使用RT-
+    Thread提供的动态内存分配函数时才需要使用到。该函数在mem.c里面实现，由rtconfig.h里面的RT_USING_HEAP和RT_USING_USER_MAIN这两个决定是否调用，目前我们暂时不用。
 
 SysTick_Handler()函数
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-代码清单 13‑3\ **(5)**\ ：SysTick中断服务函数是一个非常重要的函数，RT-Thread所有跟时间相关的事
-情都在里面处理，具体实现见代码清单 13‑4。
+-   代码清单:移植RTT-3_ **(5)**\ ：SysTick中断服务函数是一个非常重要的函数，RT-Thread所有跟时间相关的事
+情都在里面处理，具体实现见 代码清单:移植RTT-4_。
 
 .. code-block:: c
-    :caption: 代码清单 13‑4 SysTick_Handler()函数
+    :caption: 代码清单:移植RTT-4_ SysTick_Handler()函数
+    :name: 代码清单:移植RTT-4
     :linenos:
 
     /**
@@ -826,20 +831,21 @@ SysTick_Handler()函数
     }
 
 
-代码清单 13‑4 **(1)**\ ：进入中断，对中断计数器rt_interrupt_nest加1操作。
+-   代码清单:移植RTT-4_ **(1)**\ ：进入中断，对中断计数器rt_interrupt_nest加1操作。
 
-代码清单 13‑4\ **(2)**\ ：rt_tick_increase()用于更新时基，实现时间片，扫描系统定时器。
+-   代码清单:移植RTT-4_\ **(2)**\ ：rt_tick_increase()用于更新时基，实现时间片，扫描系统定时器。
 
-代码清单 13‑4\ **(3)** ：退出中断，对中断计数器rt_interrupt_nest减1操作。
+-   代码清单:移植RTT-4_\ **(3)** ：退出中断，对中断计数器rt_interrupt_nest减1操作。
 
 board.c文件修改
 ------------------
 
-board.c文件内容修改的并不多，具体见代码清单 13‑5的高亮部分。
+board.c文件内容修改的并不多，具体见代码清单:移植RTT-5的高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 13‑5 board.c文件修改
+    :caption: 代码清单:移植RTT-5 board.c文件修改
     :emphasize-lines: 2,8-38,66-74
+    :name: 代码清单:移植RTT-5
     :linenos:
 
     /* 开发板硬件相关头文件 */
@@ -955,11 +961,12 @@ board.c文件内容修改的并不多，具体见代码清单 13‑5的高亮部
         rt_interrupt_leave();
     }
 
-代码清单 13‑5\ **修改(1)**\ ：在user目录下新建一个board.h头文件，用来包含固件库和BSP相关的
-头文件和存放board.c里面的函数声明，具体见代码清单 13‑6。
+-   代码清单:移植RTT-5_ **修改(1)**\ ：在user目录下新建一个board.h头文件，用来包含固件库和BSP相关的
+头文件和存放board.c里面的函数声明，具体见 代码清单:移植RTT-6_。
 
 .. code-block:: c
-    :caption: 代码清单 13‑6 board.h文件内容
+    :caption: 代码清单:移植RTT-6 board.h文件内容
+    :name: 代码清单:移植RTT-6
     :linenos:
 
     #ifndef __BOARD_H__
@@ -987,17 +994,18 @@ board.c文件内容修改的并不多，具体见代码清单 13‑5的高亮部
 
     #endif /* __BOARD_H__ */
 
-代码清单 13‑5\ **修改(2)**\ ：SysTick相关的寄存器和初始化函数统统屏蔽掉，将由固件库文件core_cm3/4/7里面的替代。
+-   代码清单:移植RTT-5_ **修改(2)**\ ：SysTick相关的寄存器和初始化函数统统屏蔽掉，将由固件库文件core_cm3/4/7里面的替代。
 
-代码清单 13‑5\ **修改(3)**\ ：SysTick初始化函数由固件库文件core_cm3/4/7里面的SysTick_Config()函数替代。
+-   代码清单:移植RTT-5_ **修改(3)**\ ：SysTick初始化函数由固件库文件core_cm3/4/7里面的SysTick_Config()函数替代。
 
 如果使用的是HAL库（目前野火只在STM32 M7系列中使用HAL库），则必须添加系统时钟初始化函数，这个函数在
 我们利用STM32CubeMX代码生成工具配置工程时会自动给我们生成，我们只需添加到rt_hw_board_init()函数进
-行初始化即可，具体见代码清单 13‑7高亮部分。
+行初始化即可，具体见 代码清单:移植RTT-7_ 高亮部分。
 
 .. code-block:: c
-    :caption: 代码清单 13‑7修改使用HAL库的board.c文件
+    :caption: 代码清单:移植RTT-7修改使用HAL库的board.c文件
     :emphasize-lines: 34-38,102-157
+    :name: 代码清单:移植RTT-7
     :linenos:
 
     /* 开发板硬件相关头文件 */
@@ -1161,11 +1169,11 @@ board.c文件内容修改的并不多，具体见代码清单 13‑5的高亮部
     /****************************END OF FILE***************************/
 
 
-代码清单 13‑7\ **(1)**\ ：添加系统时钟初始化函数在\ **(3)** 实现，为内部调用函数。
+-   代码清单:移植RTT-7_ **(1)**\ ：添加系统时钟初始化函数在\ **(3)** 实现，为内部调用函数。
 
-代码清单 13‑7\ **(2)**\ ：初始化系统时钟之后，需要对SysTick进行初始化，因为系统时钟初始化函数会
-在最后将SysTick的时钟也进行初始化为HAL库中默认的时钟，不满足我们系统的要求，所以我们只能使用
-HAL_SYSTICK_Config将SysTick重新初始化，根据我们的RT_TICK_PER_SECOND宏定义进行配置。保证系统正常运行。
+-   代码清单:移植RTT-7_ **(2)**\ ：初始化系统时钟之后，需要对SysTick进行初始化，因为系统时钟初始化函数会
+    在最后将SysTick的时钟也进行初始化为HAL库中默认的时钟，不满足我们系统的要求，所以我们只能使用
+    HAL_SYSTICK_Config将SysTick重新初始化，根据我们的RT_TICK_PER_SECOND宏定义进行配置。保证系统正常运行。
 
 添加core_delay.c和core_delay.h文件
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1191,12 +1199,13 @@ HAL库驱动中，由于某些外设的驱动需要使用超时判断（比如I2
 (CYCNNT从0开始计数到溢出，最长的延时时间与内核的频率有关，假设内核频率为400M，内核时钟跳一次的时间
 大概为1/400M=2.5ns)，当CYCCNT溢出之后，会清0重新开始向上计数。这种延时方案不仅精确，而且还不占用单
 片机的外设资源，非常方便。所以HAL库里面刚刚讲到的需要重写的三个函数我们都基于CYCCNT的方案来实现，具
-体的实现见代码清单 13‑8和代码清单13‑9的高亮部分，其中core_delay.c和core_delay.h这两个文件我们已经
+体的实现见代码清单:移植RTT-8和代码清单13‑9的高亮部分，其中core_delay.c和core_delay.h这两个文件我们已经
 写好，放在user文件夹下即可，具体的使用方法看注释。
 
 .. code-block:: c
-    :caption: 代码清单 13‑8 core_delay.c文件内容
+    :caption: 代码清单:移植RTT-8 core_delay.c文件内容
     :emphasize-lines: 53-62,79-82
+    :name: 代码清单:移植RTT-8
     :linenos:
 
     /**
@@ -1297,49 +1306,50 @@ HAL库驱动中，由于某些外设的驱动需要使用超时判断（比如I2
     */
     void CPU_TS_Tmr_Delay_US(uint32_t us)
     {
-    uint32_t ticks;
-    uint32_t told,tnow,tcnt=0;
+        uint32_t ticks;
+        uint32_t told,tnow,tcnt=0;
 
-    /* 在函数内部初始化时间戳寄存器， */
-    #if (CPU_TS_INIT_IN_DELAY_FUNCTION)
-    /* 初始化时间戳并清零 */
-    HAL_InitTick(5);
-    #endif
+        /* 在函数内部初始化时间戳寄存器， */
+        #if (CPU_TS_INIT_IN_DELAY_FUNCTION)
+        /* 初始化时间戳并清零 */
+        HAL_InitTick(5);
+        #endif
 
-    ticks = us * (GET_CPU_ClkFreq() / 1000000);  /* 需要的节拍数 */
-    tcnt = 0;
-    told = (uint32_t)CPU_TS_TmrRd();         /* 刚进入时的计数器值 */
+        ticks = us * (GET_CPU_ClkFreq() / 1000000);  /* 需要的节拍数 */
+        tcnt = 0;
+        told = (uint32_t)CPU_TS_TmrRd();         /* 刚进入时的计数器值 */
 
-    while(1)
-    {
-        tnow = (uint32_t)CPU_TS_TmrRd();
-        if(tnow != told)
+        while(1)
         {
-            /* 32位计数器是递增计数器 */
-        if(tnow > told)
-        {
-            tcnt += tnow - told;
-        }
-        /* 重新装载 */
-        else
-        {
-            tcnt += UINT32_MAX - told + tnow;
-        }
+            tnow = (uint32_t)CPU_TS_TmrRd();
+            if(tnow != told)
+            {
+                /* 32位计数器是递增计数器 */
+            if(tnow > told)
+            {
+                tcnt += tnow - told;
+            }
+            /* 重新装载 */
+            else
+            {
+                tcnt += UINT32_MAX - told + tnow;
+            }
 
-        told = tnow;
+            told = tnow;
 
-        /*时间超过/等于要延迟的时间,则退出 */
-        if(tcnt >= ticks)break;
+            /*时间超过/等于要延迟的时间,则退出 */
+            if(tcnt >= ticks)break;
+            }
         }
     }
-    }
 
-/*******************************END OF FILE**********************/
+    /*******************************END OF FILE**********************/
 
 
 .. code-block:: c
-    :caption: 代码清单 13‑9 core_delay.h文件内容
+    :caption: 代码清单:移植RTT-9 core_delay.h文件内容
     :emphasize-lines: 24
+    :name: 代码清单:移植RTT-9
     :linenos:
 
     #ifndef __CORE_DELAY_H
@@ -1373,19 +1383,20 @@ HAL库驱动中，由于某些外设的驱动需要使用超时判断（比如I2
     #endif /* __CORE_DELAY_H */
 
 
-代码清单 13‑8\ **(1)**\ ：重写HAL_InitTick()函数。
+-   代码清单:移植RTT-8_ **(1)**\ ：重写HAL_InitTick()函数。
 
-代码清单 13‑8\ **(2)**\ ：重写HAL_GetTick ()函数。
+-   代码清单:移植RTT-8_ **(2)**\ ：重写HAL_GetTick ()函数。
 
-代码清单 13‑9\ **(3)**\ ：重写HAL_Delay ()函数。
+-   代码清单:移植RTT-9_ **(3)**\ ：重写HAL_Delay ()函数。
 
 修改main.c
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-我们将原来裸机工程里面main.c的文件内容全部删除，新增如下内容，具体见代码清单 13‑10。
+我们将原来裸机工程里面main.c的文件内容全部删除，新增如下内容，具体见 代码清单:移植RTT-10_。
 
 .. code-block:: c
-    :caption: 代码清单 13‑10 main.c文件内容
+    :caption: 代码清单:移植RTT-10 main.c文件内容
+    :name: 代码清单:移植RTT-10
     :linenos:
 
     /**
@@ -1450,6 +1461,7 @@ HAL库驱动中，由于某些外设的驱动需要使用超时判断（比如I2
 下载验证
 ~~~~~~~~~~~~
 
-将程序编译好，用DAP仿真器把程序下载到野火STM32开发板（具体型号根据你买的板子而定，每个型号的板子都配套有对应的程序），一看，啥现象都没有，一脸懵逼，我说，你急个肾，目前我们还没有在main线程里面创建应用线程，但是系统是已经跑起来了，只有默认的空闲线程和main线程。要想看现象，得自己在ma
-in创建里面应用线程，如果创建线程，请看下一章“创建线程”。
+将程序编译好，用DAP仿真器把程序下载到野火STM32开发板（具体型号根据你买的板子而定，每个型号的板子都配
+套有对应的程序），一看，啥现象都没有，一脸懵逼，我说，你急个肾，目前我们还没有在main线程里面创建应用
+线程，但是系统是已经跑起来了，只有默认的空闲线程和main线程。要想看现象，得自己在main创建里面应用线程，如果创建线程，请看下一章“创建线程”。
 
