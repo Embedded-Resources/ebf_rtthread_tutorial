@@ -72,9 +72,9 @@ Thread官方并没有将抠出来的Nano放到他们的官方网站，而是作�
     :alt: 拷贝RT-Thread Package到裸机工程
     
 
-图 拷贝Package到裸机工程_ 中RT-Thread文件夹下就是RT-Thread Nano 的所有东西，该文件夹下的具体内容见表格 13‑1。
+图 拷贝Package到裸机工程_ 中RT-Thread文件夹下就是RT-Thread Nano 的所有东西，该文件夹下的具体内容见下表。
 
-表格 13‑1 RT-dhread 文件夹内容组成
+表格 RT-dhread 文件夹内容组成
 
 ============== ==================== ======================
 文件夹         文件夹               描述
@@ -112,8 +112,8 @@ bsp文件夹简介
 
 bsp文件夹里面存放的是板级支持包，即board support package的英文缩写。RT-Thread为了推广自己，
 会给各种半导体厂商的评估板写好驱动程序，这些驱动程序就放在bsp这个目录下，我们这里用的是nano版本，
-只有几款开发板的驱动，具体见图13‑6，如果是Master版本，则存放了非常多的开发板的驱动，具体见
-图 13‑7。bsp文件夹下面的board.c这是RT-Thread用来初始化开发板硬件的相关函数。rtconfig.h是
+只有几款开发板的驱动，具体见图 bsp文件夹内容_，如果是Master版本，则存放了非常多的开发板的驱动，具体见
+图 Master文件夹内容_。bsp文件夹下面的board.c这是RT-Thread用来初始化开发板硬件的相关函数。rtconfig.h是
 RT-Thread功能的配置头文件，里面定义了很多宏，通过这些宏定义，我们可以裁剪RT-Thread的功能。
 用户在使用RT-Thread的时候，用户只需要修改board.c和rtconfig.h这两个文件的内容即可，其它文件
 我们不需要改动。如果为了减小工程的大小，bsp文件夹下面除了board.c和rtconfig.h这两个文件要保
@@ -124,14 +124,11 @@ RT-Thread功能的配置头文件，里面定义了很多宏，通过这些宏�
     :name: bsp文件夹内容
     :alt: 图 13‑6 RT-Thread Nano bsp 文件夹内容
 
-RT-Thread Nano bsp 文件夹内容
 
 .. image:: media/porting_to_stm32/portin005.png
     :align: center
     :name: Master文件夹内容
     :alt: 图 13‑7 RT-Thread Master 文件夹内容（以后会更多）
-
-RT-Thread Master 文件夹内容（以后会更多）
 
 components文件夹简介
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,9 +169,9 @@ src目录下面存放的是RT-Thread内核的源文件，是内核的核心，�
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 接下来我们在开发环境里面新建rtt/source和rtt/ports两个组文件夹，其中rtt/source用于存放src文件夹的内容，rtt/ports用于存放libcpu/arm/cortex-m？文件夹的内容，“？”表示3、4或者7，具体选择哪个得看你使用的是野火哪个型号的STM32开发板，具体
-见表格 13‑2。
+见下表。
 
-表格 13‑2 野火STM32开发板型号对应RT-Thread的接口文件
+表格  野火STM32开发板型号对应RT-Thread的接口文件
 
 =================== ============= ===========================
 野火STM32开发板型号 具体芯片型号  RT-Thread不同内核的接口文件
